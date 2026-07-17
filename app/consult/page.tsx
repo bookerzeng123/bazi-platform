@@ -188,7 +188,8 @@ export default function ConsultPage() {
                 {result.analysis.split('\n').map((line: string, i: number) => {
                   if (line.startsWith('## ')) return <h2 key={i}>{line.replace('## ', '')}</h2>
                   if (line.startsWith('### ')) return <h3 key={i}>{line.replace('### ', '')}</h3>
-                  return <span key={i}>{line}</span><br />
+                  if (!line.trim()) return <br key={i} />
+                  return <p key={i}>{line}</p>
                 })}
               </div>
 
