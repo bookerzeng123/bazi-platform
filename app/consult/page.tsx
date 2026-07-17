@@ -2,6 +2,8 @@
 import { useState } from 'react'
 import Link from 'next/link'
 
+type Gender = 'male' | 'female'
+
 interface FormData {
   name: string
   year: string
@@ -9,7 +11,7 @@ interface FormData {
   day: string
   hour: string
   minute: string
-  gender: '男' | '女'
+  gender: Gender
   question: string
 }
 
@@ -21,7 +23,7 @@ export default function ConsultPage() {
     day: '',
     hour: '',
     minute: '',
-    gender: '男',
+    gender: 'male',
     question: '',
   })
   const [result, setResult] = useState<any>(null)
@@ -116,12 +118,12 @@ export default function ConsultPage() {
             <div className="form-group">
               <label>性别（影响大运方向）</label>
               <div className="gender-row">
-                <label className={`gender-option ${form.gender === '男' ? 'selected' : ''}`}>
-                  <input type="radio" name="gender" value="男" checked={form.gender === '男'} onChange={() => updateField('gender', '男')} />
+                <label className={`gender-option ${form.gender === 'male' ? 'selected' : ''}`}>
+                  <input type="radio" name="gender" value="male" checked={form.gender === 'male'} onChange={() => updateField('gender', 'male')} />
                   ☰ 男命
                 </label>
-                <label className={`gender-option ${form.gender === '女' ? 'selected' : ''}`}>
-                  <input type="radio" name="gender" value="女" checked={form.gender === '女'} onChange={() => updateField('gender', '女')} />
+                <label className={`gender-option ${form.gender === 'female' ? 'selected' : ''}`}>
+                  <input type="radio" name="gender" value="female" checked={form.gender === 'female'} onChange={() => updateField('gender', 'female')} />
                   ☱ 女命
                 </label>
               </div>
@@ -162,7 +164,7 @@ export default function ConsultPage() {
               <div className="result-header">
                 <div className="result-title">命盘解读结果</div>
                 <div className="result-time">
-                  {form.name || '缘主'} · {form.year}年{form.month}月{form.day}日{form.hour}时 · {form.gender}
+                  {form.name || '缘主'} · {form.year}年{form.month}月{form.day}日{form.hour}时 · {form.gender === 'male' ? '男' : '女'}
                 </div>
               </div>
 
