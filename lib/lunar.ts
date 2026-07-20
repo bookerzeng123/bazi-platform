@@ -54,9 +54,6 @@ export function toLunar(year: number, month: number, day: number): LunarDate {
  * 23:00-01:00为子时，01:00-03:00为丑时，以此类推
  */
 export function getHourGanZhi(dayGanZhi: string, hour: number): string {
-  const solar = Solar.fromYmd(2024, 1, 1)
-  const lunar = solar.getLunar()
-  
   // 使用库计算时辰
   const timeZhi = Math.floor((hour + 1) / 2) % 12
   const zhi = DI_ZHI[timeZhi]
@@ -81,10 +78,13 @@ export function getHourGanZhi(dayGanZhi: string, hour: number): string {
 }
 
 /**
- * 获取月干支
+ * 获取月干支 - 使用 lunar-javascript 库直接获取
  */
 export function getMonthGanZhi(yearGan: string, lunarMonth: number): string {
-  // 年干定月干：甲己之年丙作首，乙庚之岁戊为头...
+  // 使用五虎遁月诀：年干定月干
+  // 甲己之年丙作首，乙庚之岁戊为头，
+  // 丙辛之岁寻庚上，丁壬壬位顺行流，
+  // 戊癸之年何方发，甲寅之上好追求。
   const yearGanMap: Record<string, number> = {
     '甲': 2, '己': 2,  // 丙
     '乙': 4, '庚': 4,  // 戊
@@ -94,14 +94,16 @@ export function getMonthGanZhi(yearGan: string, lunarMonth: number): string {
   }
   
   const startGan = yearGanMap[yearGan]
+  // 正月建寅，所以 lunarMonth 从 1 开始对应寅月
   const gan = TIAN_GAN[(startGan + lunarMonth - 1) % 10]
+  // 正月寅，二月卯...
   const zhi = DI_ZHI[(lunarMonth + 1) % 12]
   
   return gan + zhi
 }
 
 /**
- * 获取日干支
+ * 获取日干支 - 使用 lunar-javascript 库
  */
 export function getDayGanZhi(year: number, month: number, day: number): string {
   const solar = Solar.fromYmd(year, month, day)
@@ -114,4 +116,33 @@ export function getDayGanZhi(year: number, month: number, day: number): string {
  */
 export function getHourBranchIndex(hour: number): number {
   return Math.floor((hour + 1) / 2) % 12
+}
+
+/**
+ * 验证排盘准确性 - 用于调试
+ */
+export function verifyBazi(year: number, month: number, day: number, hour: number): {
+  solar: string
+  lunar: string
+  yearPillar: string
+  monthPillar: string
+  dayPillar: string
+  hourPillar: string
+  shengXiao: string
+} {
+  const solar = Solar.fromYmd(year, month, day)
+  const lunar = solar.getLunar()
+  
+  const dayGanZhi = lunar.getDayInGanZhi()
+  const hourGanZhi = getHourGanZhi(dayGanZhi, hour)
+  
+  return {
+    solar: `${year}-${month}-${day}`,
+    lunar: `${lunar.getYear()}年${lunar.getMonth()}月${lunar.getDay()}日`,
+    yearPillar: lunar.getYearInGanZhi(),
+    monthPillar: lunar.getMonthInGanZhi(),
+    dayPillar: dayGanZhi,
+    hourPillar: hourGanZhi,
+    shengXiao: lunar.getYearShengXiao(),
+  }
 }
