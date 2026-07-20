@@ -1,7 +1,6 @@
 /**
- * 八字排盘核心
- * 输入：公历出生时间
- * 输出：完整命盘
+ * 八字排盘核心 - 使用 lunar-javascript 库
+ * 更准确的八字计算
  */
 
 import { toLunar, getMonthGanZhi, getDayGanZhi, getHourGanZhi, DI_ZHI, SHENG_XIAO } from './lunar'
@@ -16,7 +15,7 @@ export interface BaziResult {
   tenGods: { year: string; month: string; day: string; hour: string }
   // 日主强弱
   dayMasterStrength: {
-    score: number       // -10 到 +10
+    score: number
     level: '弱' | '偏弱' | '中和' | '偏强' | '强'
     explanation: string
   }
@@ -39,39 +38,40 @@ export interface BaziResult {
   shenGong: string
 }
 
-const DAY_GAN_IDX: Record<string, number> = {
-  '甲': 0, '丙': 2, '戊': 4, '庚': 6, '壬': 8,
-  '乙': 1, '丁': 3, '己': 5, '辛': 7, '癸': 9,
+// 天干索引
+const GAN_IDX: Record<string, number> = {
+  '甲': 0, '乙': 1, '丙': 2, '丁': 3, '戊': 4,
+  '己': 5, '庚': 6, '辛': 7, '壬': 8, '癸': 9,
 }
 
 // 十神映射表（日干为参照）
 const TEN_GODS: Record<string, string[]> = {
-  '甲': ['比','劫','食','伤','财','才','官','杀','印','枭'],
-  '乙': ['劫','比','伤','食','才','财','杀','官','枭','印'],
-  '丙': ['比','劫','食','伤','财','才','官','杀','印','枭'],
-  '丁': ['劫','比','伤','食','才','财','杀','官','枭','印'],
-  '戊': ['比','劫','食','伤','财','才','官','杀','印','枭'],
-  '己': ['劫','比','伤','食','才','财','杀','官','枭','印'],
-  '庚': ['比','劫','食','伤','财','才','官','杀','印','枭'],
-  '辛': ['劫','比','伤','食','才','财','杀','官','枭','印'],
-  '壬': ['比','劫','食','伤','财','才','官','杀','印','枭'],
-  '癸': ['劫','比','伤','食','才','财','杀','官','枭','印'],
+  '甲': ['比肩', '劫财', '食神', '伤官', '偏财', '正财', '七杀', '正官', '偏印', '正印'],
+  '乙': ['劫财', '比肩', '伤官', '食神', '正财', '偏财', '正官', '七杀', '正印', '偏印'],
+  '丙': ['比肩', '劫财', '食神', '伤官', '偏财', '正财', '七杀', '正官', '偏印', '正印'],
+  '丁': ['劫财', '比肩', '伤官', '食神', '正财', '偏财', '正官', '七杀', '正印', '偏印'],
+  '戊': ['比肩', '劫财', '食神', '伤官', '偏财', '正财', '七杀', '正官', '偏印', '正印'],
+  '己': ['劫财', '比肩', '伤官', '食神', '正财', '偏财', '正官', '七杀', '正印', '偏印'],
+  '庚': ['比肩', '劫财', '食神', '伤官', '偏财', '正财', '七杀', '正官', '偏印', '正印'],
+  '辛': ['劫财', '比肩', '伤官', '食神', '正财', '偏财', '正官', '七杀', '正印', '偏印'],
+  '壬': ['比肩', '劫财', '食神', '伤官', '偏财', '正财', '七杀', '正官', '偏印', '正印'],
+  '癸': ['劫财', '比肩', '伤官', '食神', '正财', '偏财', '正官', '七杀', '正印', '偏印'],
 }
 
 // 地支藏干表
 const ZANGAN: Record<string, string[]> = {
   '子': ['癸'],
-  '丑': ['己','癸','辛'],
-  '寅': ['甲','丙','戊'],
+  '丑': ['己', '癸', '辛'],
+  '寅': ['甲', '丙', '戊'],
   '卯': ['乙'],
-  '辰': ['戊','乙','癸'],
-  '巳': ['丙','庚','戊'],
-  '午': ['丁','己'],
-  '未': ['己','丁','乙'],
-  '申': ['庚','壬','戊'],
+  '辰': ['戊', '乙', '癸'],
+  '巳': ['丙', '庚', '戊'],
+  '午': ['丁', '己'],
+  '未': ['己', '丁', '乙'],
+  '申': ['庚', '壬', '戊'],
   '酉': ['辛'],
-  '戌': ['戊','辛','丁'],
-  '亥': ['壬','甲'],
+  '戌': ['戊', '辛', '丁'],
+  '亥': ['壬', '甲'],
 }
 
 // 地支五行
@@ -88,27 +88,55 @@ const GAN_WUXING: Record<string, string> = {
   '壬': '水', '癸': '水',
 }
 
-// 五行强度（日干 vs 其他柱）
-const WUXING_STRENGTH: Record<string, number> = {
-  '木': 0, '火': 1, '土': 2, '金': 3, '水': 4,
+// 五行相生相克关系
+const WUXING_SHENG: Record<string, string> = {
+  '木': '火', '火': '土', '土': '金', '金': '水', '水': '木',
+}
+const WUXING_KE: Record<string, string> = {
+  '木': '土', '土': '水', '水': '火', '火': '金', '金': '木',
 }
 
-// 生成大运（每步大运管10年）
-function generateDaYun(year: number, monthGan: string, monthZhi: string, birthYear: number, isMale: boolean): Array<{ age: string; startYear: number; gan: string; zhi: string; ganZhi: string }> {
-  const zhiCycle = ['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥']
-  const zhiIdx = zhiCycle.indexOf(monthZhi)
-  const ganCycle = ['甲','乙','丙','丁','戊','己','庚','辛','壬','癸']
-  const ganIdx = ganCycle.indexOf(monthGan)
+// 获取十神名称
+function getTenGod(dayGan: string, targetGan: string): string {
+  const dayIdx = GAN_IDX[dayGan]
+  const targetIdx = GAN_IDX[targetGan]
+  const diff = (targetIdx - dayIdx + 10) % 10
+  return TEN_GODS[dayGan][diff]
+}
+
+// 生成大运
+function generateDaYun(
+  birthYear: number,
+  monthGan: string,
+  monthZhi: string,
+  isMale: boolean,
+  yearGan: string
+): Array<{ age: string; startYear: number; gan: string; zhi: string; ganZhi: string }> {
+  const ganCycle = ['甲', '乙', '丙', '丁', '戊', '己', '庚', '辛', '壬', '癸']
+  const zhiCycle = ['子', '丑', '寅', '卯', '辰', '巳', '午', '未', '申', '酉', '戌', '亥']
   
-  const ganStep = isMale ? 1 : -1
-  const zhiStep = isMale ? 1 : -1
+  const yearGanIdx = GAN_IDX[yearGan]
+  const isYang = yearGanIdx % 2 === 0 // 甲丙戊庚壬为阳
+  
+  // 阳男阴女顺排，阴男阳女逆排
+  const isForward = (isYang && isMale) || (!isYang && !isMale)
+  
+  const ganIdx = ganCycle.indexOf(monthGan)
+  const zhiIdx = zhiCycle.indexOf(monthZhi)
   
   const result = []
   for (let i = 0; i < 10; i++) {
-    const newGanIdx = ((ganIdx + ganStep * (i + 1)) % 10 + 10) % 10
-    const newZhiIdx = ((zhiIdx + zhiStep * (i + 1)) % 12 + 12) % 12
-    const startAge = (i + 1) * 10 - 9
-    const startYear = birthYear + (i + 1) * 10
+    const step = i + 1
+    const newGanIdx = isForward
+      ? (ganIdx + step) % 10
+      : (ganIdx - step + 10) % 10
+    const newZhiIdx = isForward
+      ? (zhiIdx + step) % 12
+      : (zhiIdx - step + 12) % 12
+    
+    const startAge = step * 10 - 9
+    const startYear = birthYear + startAge - 1
+    
     result.push({
       age: `${startAge}-${startAge + 9}岁`,
       startYear,
@@ -120,62 +148,53 @@ function generateDaYun(year: number, monthGan: string, monthZhi: string, birthYe
   return result
 }
 
-// 生成流年（未来10年）
-function generateLiuNian(birthYear: number, dayGan: string): Array<{ year: number; gan: string; zhi: string; ganZhi: string }> {
-  const ganCycle = ['甲','乙','丙','丁','戊','己','庚','辛','壬','癸']
-  const zhiCycle = ['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥']
-  const yearGanIdx = (birthYear - 4) % 10
-  const yearZhiIdx = (birthYear - 4) % 12
+// 生成流年
+function generateLiuNian(startYear: number): Array<{ year: number; gan: string; zhi: string; ganZhi: string }> {
+  const ganCycle = ['甲', '乙', '丙', '丁', '戊', '己', '庚', '辛', '壬', '癸']
+  const zhiCycle = ['子', '丑', '寅', '卯', '辰', '巳', '午', '未', '申', '酉', '戌', '亥']
   
   const result = []
   for (let i = 0; i < 10; i++) {
-    const gy = (yearGanIdx + i) % 10
-    const gz = (yearZhiIdx + i) % 12
+    const year = startYear + i
+    const ganIdx = (year - 4) % 10
+    const zhiIdx = (year - 4) % 12
     result.push({
-      year: birthYear + i,
-      gan: ganCycle[gy >= 0 ? gy : gy + 10],
-      zhi: zhiCycle[gz >= 0 ? gz : gz + 12],
-      ganZhi: ganCycle[gy >= 0 ? gy : gy + 10] + zhiCycle[gz >= 0 ? gz : gz + 12],
+      year,
+      gan: ganCycle[ganIdx],
+      zhi: zhiCycle[zhiIdx],
+      ganZhi: ganCycle[ganIdx] + zhiCycle[zhiIdx],
     })
   }
   return result
 }
 
-// 计算日主强弱（简化版）
+// 计算日主强弱
 function calcDayMasterStrength(
   dayGan: string,
-  yearZhi: string, monthZhi: string, dayZhi: string, hourZhi: string,
-  yearGan: string, monthGan: string, hourGan: string,
-  isMale: boolean
+  monthZhi: string,
+  yearZhi: string,
+  dayZhi: string,
+  hourZhi: string
 ): { score: number; level: '弱' | '偏弱' | '中和' | '偏强' | '强'; explanation: string } {
   let score = 0
   const dayWx = GAN_WUXING[dayGan]
   
-  // 月令权重最大（最重要）
+  // 月令最重要（得令）
   const monthWx = ZHI_WUXING[monthZhi]
-  const monthGans = ZANGAN[monthZhi]
-  const monthBonus = (monthWx === dayWx || monthGans.includes(dayGan)) ? 3 : -3
+  if (monthWx === dayWx) score += 3
+  else if (WUXING_SHENG[monthWx] === dayWx) score += 2
+  else if (WUXING_KE[monthWx] === dayWx) score -= 2
   
-  // 其他三柱
-  const pillars = [yearZhi, dayZhi, hourZhi]
-  const pillarGans = [yearGan, dayGan, hourGan]
-  
-  pillars.forEach((z, i) => {
-    const wx = ZHI_WUXING[z]
-    if (wx === dayWx) score += 1
-    if (ZANGAN[z].includes(dayGan)) score += 1
+  // 地支藏干（得地）
+  const zhis = [yearZhi, dayZhi, hourZhi]
+  zhis.forEach(z => {
+    const zhiGans = ZANGAN[z]
+    zhiGans.forEach(g => {
+      if (g === dayGan) score += 1.5
+      else if (GAN_WUXING[g] === dayWx) score += 1
+      else if (WUXING_SHENG[GAN_WUXING[g]] === dayWx) score += 0.5
+    })
   })
-  
-  // 天干助身
-  pillarGans.forEach(g => {
-    if (g === dayGan) score += 1
-  })
-  
-  // 时辰
-  const hourWx = ZHI_WUXING[hourZhi]
-  if (hourWx === dayWx || ZANGAN[hourZhi].includes(dayGan)) score += 1
-  
-  score += monthBonus
   
   let level: '弱' | '偏弱' | '中和' | '偏强' | '强'
   let explanation: string
@@ -186,10 +205,10 @@ function calcDayMasterStrength(
   } else if (score <= 0) {
     level = '偏弱'
     explanation = '日主偏弱，宜补印扶身，忌财官过重'
-  } else if (score <= 2) {
+  } else if (score <= 3) {
     level = '中和'
     explanation = '日主中和，五行平衡，运势平稳'
-  } else if (score <= 4) {
+  } else if (score <= 5) {
     level = '偏强'
     explanation = '日主偏强，宜泄不宜补，可用食伤财星'
   } else {
@@ -197,43 +216,36 @@ function calcDayMasterStrength(
     explanation = '日主极强，亟需食伤泄秀或官杀克制'
   }
   
-  return { score, level, explanation }
+  return { score: Math.round(score), level, explanation }
 }
 
 // 计算用神忌神
 function calcUsefulHarmful(
-  strength: { score: number; level: string },
-  dayGan: string, monthZhi: string, yearZhi: string, hourZhi: string
+  strength: { level: string },
+  dayGan: string
 ): { useful: string[]; harmful: string[] } {
   const dayWx = GAN_WUXING[dayGan]
-  const monthWx = ZHI_WUXING[monthZhi]
-  const monthGans = ZANGAN[monthZhi]
-  
-  // 五行相生相克
-  const wuxing = ['木', '火', '土', '金', '水']
-  const dayIdx = WUXING_STRENGTH[dayWx]
-  const birthIdx = dayIdx
   
   // 印星（生我的）
-  const yin = wuxing[(dayIdx + 4) % 5]
-  // 比劫（和我一样的）
+  const yin = Object.keys(WUXING_SHENG).find(k => WUXING_SHENG[k] === dayWx) || ''
+  // 比劫（同我）
   const bijie = dayWx
   // 食伤（我生的）
-  const shishang = wuxing[(dayIdx + 1) % 5]
-  // 财星（克我的）
-  const caixing = wuxing[(dayIdx + 3) % 5]
-  // 官杀（克日主最强的）
-  const guansha = wuxing[(dayIdx + 2) % 5]
+  const shishang = WUXING_SHENG[dayWx]
+  // 财星（我克的）
+  const caixing = Object.keys(WUXING_KE).find(k => WUXING_KE[k] === dayWx) || ''
+  // 官杀（克我的）
+  const guansha = WUXING_KE[dayWx]
   
   if (strength.level === '弱' || strength.level === '偏弱') {
     return {
-      useful: [yin === dayWx ? '印星' + yin + '（同气相助）' : '印星' + yin, bijie + '（比肩劫财助身）'],
-      harmful: [caixing + '（财星耗身）', guansha + '（官杀攻身）'],
+      useful: [`${yin}（印星生身）`, `${bijie}（比劫助身）`],
+      harmful: [`${caixing}（财星耗身）`, `${guansha}（官杀攻身）`],
     }
   } else if (strength.level === '强' || strength.level === '偏强') {
     return {
-      useful: [shishang + '（食伤泄秀）', caixing + '（财星耗身）'],
-      harmful: [yin + '（印星生身更旺）', bijie + '（比劫助身）'],
+      useful: [`${shishang}（食伤泄秀）`, `${caixing}（财星耗身）`],
+      harmful: [`${yin}（印星生身更旺）`, `${bijie}（比劫助身）`],
     }
   }
   return {
@@ -250,11 +262,27 @@ function countWuXing(
   hourGan: string, hourZhi: string
 ): Record<string, number> {
   const counts: Record<string, number> = { '木': 0, '火': 0, '土': 0, '金': 0, '水': 0 }
-  const gans = [yearGan, monthGan, dayGan, hourGan]
-  const zhis = [yearZhi, dayZhi, monthZhi, hourZhi]
   
-  gans.forEach(g => { counts[GAN_WUXING[g]]++ })
-  zhis.forEach(z => { counts[ZHI_WUXING[z]]++; ZANGAN[z].forEach(sg => { counts[GAN_WUXING[sg]] += 0.5 }) })
+  // 天干五行
+  counts[GAN_WUXING[yearGan]]++
+  counts[GAN_WUXING[monthGan]]++
+  counts[GAN_WUXING[dayGan]]++
+  counts[GAN_WUXING[hourGan]]++
+  
+  // 地支本气
+  counts[ZHI_WUXING[yearZhi]]++
+  counts[ZHI_WUXING[monthZhi]]++
+  counts[ZHI_WUXING[dayZhi]]++
+  counts[ZHI_WUXING[hourZhi]]++
+  
+  // 地支藏干（中气和余气权重较低）
+  const allZhis = [yearZhi, monthZhi, dayZhi, hourZhi]
+  allZhis.forEach(z => {
+    const gans = ZANGAN[z]
+    gans.slice(1).forEach(g => {
+      counts[GAN_WUXING[g]] += 0.5
+    })
+  })
   
   return counts
 }
@@ -268,66 +296,68 @@ export function calculateBazi(
   birthDay: number,
   birthHour: number,
   birthMinute: number,
-  gender: '男' | '女'
+  gender: 'male' | 'female'
 ): BaziResult {
-  const isMale = gender === '男'
+  const isMale = gender === 'male'
+  
+  // 获取农历信息
   const lunar = toLunar(birthYear, birthMonth, birthDay)
-  const { tianGan: yearGan, diZhi: yearZhi } = lunar
   
-  // 计算月干支
-  const monthGan = getMonthGanZhi(yearGan, lunar.month)
-  const monthZhi = DI_ZHI[(lunar.month - 1) % 12]
+  // 年柱
+  const yearGanZhi = lunar.ganZhiYear
+  const yearGan = yearGanZhi[0]
+  const yearZhi = yearGanZhi[1]
   
-  // 计算日干支
+  // 月柱
+  const monthGanZhi = getMonthGanZhi(yearGan, lunar.month)
+  const monthGan = monthGanZhi[0]
+  const monthZhi = monthGanZhi[1]
+  
+  // 日柱
   const dayGanZhi = getDayGanZhi(birthYear, birthMonth, birthDay)
   const dayGan = dayGanZhi[0]
   const dayZhi = dayGanZhi[1]
   
-  // 计算时干支
-  const hourGanZhi = getHourGanZhi(dayGan, birthHour)
+  // 时柱
+  const hourGanZhi = getHourGanZhi(dayGanZhi, birthHour)
   const hourGan = hourGanZhi[0]
   const hourZhi = hourGanZhi[1]
   
   // 十神
-  const dayGanIdx = DAY_GAN_IDX[dayGan]
-  const tenGodMap = TEN_GODS[dayGan]
-  
-  function getTenGod(g: string): string {
-    const idx = ['甲','乙','丙','丁','戊','己','庚','辛','壬','癸'].indexOf(g)
-    return tenGodMap[idx]
+  const tenGods = {
+    year: getTenGod(dayGan, yearGan),
+    month: getTenGod(dayGan, monthGan),
+    day: '日主',
+    hour: getTenGod(dayGan, hourGan),
   }
   
-  // 藏干
-  function getHiddenStems(z: string): string[] {
-    return ZANGAN[z] || []
-  }
+  // 日主强弱
+  const strength = calcDayMasterStrength(dayGan, monthZhi, yearZhi, dayZhi, hourZhi)
   
-  const strength = calcDayMasterStrength(
-    dayGan, yearZhi, monthZhi, dayZhi, hourZhi,
-    yearGan, monthGan, hourGan, isMale
+  // 用神忌神
+  const { useful, harmful } = calcUsefulHarmful(strength, dayGan)
+  
+  // 五行统计
+  const wuXingCount = countWuXing(
+    yearGan, yearZhi,
+    monthGan, monthZhi,
+    dayGan, dayZhi,
+    hourGan, hourZhi
   )
   
-  const { useful, harmful } = calcUsefulHarmful(strength, dayGan, monthZhi, yearZhi, hourZhi)
-  const wuXingCount = countWuXing(yearGan, yearZhi, monthGan, monthZhi, dayGan, dayZhi, hourGan, hourZhi)
-  
   return {
-    yearPillar:   { gan: yearGan,  zhi: yearZhi,  hiddenStems: getHiddenStems(yearZhi) },
-    monthPillar:  { gan: monthGan, zhi: monthZhi, hiddenStems: getHiddenStems(monthZhi) },
-    dayPillar:    { gan: dayGan,   zhi: dayZhi,   hiddenStems: getHiddenStems(dayZhi) },
-    hourPillar:   { gan: hourGan,  zhi: hourZhi,  hiddenStems: getHiddenStems(hourZhi) },
-    tenGods: {
-      year:  getTenGod(yearGan),
-      month: getTenGod(monthGan),
-      day:   getTenGod(dayGan),
-      hour:  getTenGod(hourGan),
-    },
+    yearPillar: { gan: yearGan, zhi: yearZhi, hiddenStems: ZANGAN[yearZhi] },
+    monthPillar: { gan: monthGan, zhi: monthZhi, hiddenStems: ZANGAN[monthZhi] },
+    dayPillar: { gan: dayGan, zhi: dayZhi, hiddenStems: ZANGAN[dayZhi] },
+    hourPillar: { gan: hourGan, zhi: hourZhi, hiddenStems: ZANGAN[hourZhi] },
+    tenGods,
     dayMasterStrength: strength,
     usefulGod: useful,
     harmfulGod: harmful,
-    daYun: generateDaYun(birthYear, monthGan, monthZhi, birthYear, isMale),
-    liuNian: generateLiuNian(birthYear, dayGan),
+    daYun: generateDaYun(birthYear, monthGan, monthZhi, isMale, yearGan),
+    liuNian: generateLiuNian(birthYear),
     wuXingCount,
-    zodiac: SHENG_XIAO[DI_ZHI.indexOf(yearZhi)],
+    zodiac: lunar.shengXiao,
     mingGong: '',
     taiYuan: '',
     shenGong: '',
