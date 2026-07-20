@@ -23,6 +23,13 @@ export default function Home() {
 
       {/* Hero 区域 */}
       <section className="hero">
+        {/* 背景图片层 */}
+        <div className="hero-background">
+          <div className="hero-bg-image bg-temple" />
+          <div className="hero-bg-image bg-compass" />
+          <div className="hero-bg-image bg-divination" />
+          <div className="hero-bg-overlay" />
+        </div>
         <div className="hero-content">
           <div className="hero-badge">
             <span>✨</span>
