@@ -67,7 +67,11 @@ export default function ConsultPage() {
     }
 
     setLoading(true)
+    setError('')
     try {
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 30000) // 30秒超时
+      
       const res = await fetch('/api/consult', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -81,14 +85,22 @@ export default function ConsultPage() {
           question: form.question,
           name: form.name,
         }),
+        signal: controller.signal,
       })
+      
+      clearTimeout(timeoutId)
+      
       const data = await res.json()
       if (!res.ok) {
-        throw new Error(data.error || '排盘失败')
+        throw new Error(data.error || `排盘失败 (${res.status})`)
       }
       setResult(data)
     } catch (err: any) {
-      setError(err.message)
+      if (err.name === 'AbortError') {
+        setError('请求超时，请稍后重试')
+      } else {
+        setError(err.message || '排盘失败，请检查网络连接')
+      }
     } finally {
       setLoading(false)
     }
