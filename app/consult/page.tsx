@@ -35,9 +35,34 @@ export default function ConsultPage() {
     setError('')
     setResult(null)
 
-    // 简单验证
-    if (!form.year || !form.month || !form.day || !form.hour) {
+    // 验证
+    const year = parseInt(form.year)
+    const month = parseInt(form.month)
+    const day = parseInt(form.day)
+    const hour = parseInt(form.hour)
+
+    if (!year || !month || !day || isNaN(hour)) {
       setError('请填写完整的出生时间')
+      return
+    }
+
+    if (year < 1900 || year > 2100) {
+      setError('年份需在 1900-2100 之间')
+      return
+    }
+
+    if (month < 1 || month > 12) {
+      setError('月份需在 1-12 之间')
+      return
+    }
+
+    if (day < 1 || day > 31) {
+      setError('日期需在 1-31 之间')
+      return
+    }
+
+    if (hour < 0 || hour > 23) {
+      setError('时辰需在 0-23 之间')
       return
     }
 
@@ -46,11 +71,20 @@ export default function ConsultPage() {
       const res = await fetch('/api/consult', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        body: JSON.stringify({
+          year,
+          month,
+          day,
+          hour,
+          minute: parseInt(form.minute) || 0,
+          gender: form.gender,
+          question: form.question,
+          name: form.name,
+        }),
       })
       const data = await res.json()
       if (!res.ok) {
-        throw new Error(data.error || '解读生成失败')
+        throw new Error(data.error || '排盘失败')
       }
       setResult(data)
     } catch (err: any) {
@@ -64,7 +98,6 @@ export default function ConsultPage() {
     setForm(prev => ({ ...prev, [field]: value }))
   }
 
-  // 生成八字展示
   const baziDisplay = result?.bazi
 
   return (
@@ -75,7 +108,7 @@ export default function ConsultPage() {
       </nav>
 
       <div className="consult-page">
-        <h1 className="page-title">· 八字命盘解读 ·</h1>
+        <h1 className="page-title">八字命盘解读</h1>
 
         <div className="form-card">
           {error && <div className="error-msg">{error}</div>}
@@ -92,68 +125,111 @@ export default function ConsultPage() {
             </div>
 
             <div className="form-group">
-              <label>出生时间</label>
+              <label>出生时间（公历）</label>
               <div className="form-row">
                 <div>
-                  <input type="text" placeholder="年" value={form.year} onChange={e => updateField('year', e.target.value)} maxLength={4} />
+                  <input
+                    type="number"
+                    placeholder="年"
+                    value={form.year}
+                    onChange={e => updateField('year', e.target.value)}
+                    min="1900"
+                    max="2100"
+                  />
                 </div>
                 <div>
-                  <input type="text" placeholder="月" value={form.month} onChange={e => updateField('month', e.target.value)} maxLength={2} />
+                  <input
+                    type="number"
+                    placeholder="月"
+                    value={form.month}
+                    onChange={e => updateField('month', e.target.value)}
+                    min="1"
+                    max="12"
+                  />
                 </div>
                 <div>
-                  <input type="text" placeholder="日" value={form.day} onChange={e => updateField('day', e.target.value)} maxLength={2} />
+                  <input
+                    type="number"
+                    placeholder="日"
+                    value={form.day}
+                    onChange={e => updateField('day', e.target.value)}
+                    min="1"
+                    max="31"
+                  />
                 </div>
                 <div>
-                  <input type="text" placeholder="时" value={form.hour} onChange={e => updateField('hour', e.target.value)} maxLength={2} />
+                  <input
+                    type="number"
+                    placeholder="时"
+                    value={form.hour}
+                    onChange={e => updateField('hour', e.target.value)}
+                    min="0"
+                    max="23"
+                  />
                 </div>
               </div>
-              <div style={{ marginTop: 8 }}>
-                <input type="text" placeholder="分（可不填，精确到时）" value={form.minute} onChange={e => updateField('minute', e.target.value)} maxLength={2} style={{ width: '100%' }} />
-              </div>
-              <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', marginTop: 6 }}>
-                示例：1990年 8月 15日 14时 → 年:1990 月:8 日:15 时:14
+              <p style={{ color: '#666', fontSize: '0.85rem', marginTop: '0.5rem' }}>
+                示例：1990年8月15日14时 → 年:1990 月:8 日:15 时:14
               </p>
             </div>
 
             <div className="form-group">
-              <label>性别（影响大运方向）</label>
+              <label>性别（影响大运排法）</label>
               <div className="gender-row">
                 <label className={`gender-option ${form.gender === 'male' ? 'selected' : ''}`}>
-                  <input type="radio" name="gender" value="male" checked={form.gender === 'male'} onChange={() => updateField('gender', 'male')} />
-                  ☰ 男命
+                  <input
+                    type="radio"
+                    name="gender"
+                    value="male"
+                    checked={form.gender === 'male'}
+                    onChange={() => updateField('gender', 'male')}
+                  />
+                  <span style={{ fontSize: '1.2rem' }}>☰</span>
+                  <span>男命</span>
                 </label>
                 <label className={`gender-option ${form.gender === 'female' ? 'selected' : ''}`}>
-                  <input type="radio" name="gender" value="female" checked={form.gender === 'female'} onChange={() => updateField('gender', 'female')} />
-                  ☱ 女命
+                  <input
+                    type="radio"
+                    name="gender"
+                    value="female"
+                    checked={form.gender === 'female'}
+                    onChange={() => updateField('gender', 'female')}
+                  />
+                  <span style={{ fontSize: '1.2rem' }}>☱</span>
+                  <span>女命</span>
                 </label>
               </div>
             </div>
 
             <div className="form-group">
-              <label>想问的问题（可选，让解读更有针对性）</label>
+              <label>想问的问题（可选）</label>
               <textarea
                 rows={3}
-                placeholder="例如：我的事业运如何？今年有没有姻缘？财运好吗？"
+                placeholder="例如：我的事业运如何？今年有没有姻缘？"
                 value={form.question}
                 onChange={e => updateField('question', e.target.value)}
               />
             </div>
 
-            <div style={{ background: 'rgba(201,168,76,0.06)', borderRadius: 6, padding: '12px 16px', marginBottom: 16 }}>
-              <p style={{ color: 'var(--gold)', fontSize: '0.9rem', fontWeight: 'bold', marginBottom: 4 }}>💰 收费标准</p>
-              <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', lineHeight: 1.7 }}>
-                八字解读 <strong style={{ color: 'var(--gold)' }}>39元/次</strong><br />
-                包含：四柱详解 + 大运流年 + 用神忌神 + 人生建议
+            <div style={{
+              background: 'linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%)',
+              borderRadius: '8px',
+              padding: '1rem 1.5rem',
+              marginBottom: '1.5rem',
+              borderLeft: '4px solid var(--gold)'
+            }}>
+              <p style={{ fontWeight: 'bold', color: 'var(--ink-black)', marginBottom: '0.3rem' }}>
+                💰 收费标准
+              </p>
+              <p style={{ color: '#666', fontSize: '0.9rem' }}>
+                基础排盘 <strong style={{ color: 'var(--cinnabar)' }}>免费</strong> · 
+                AI 深度解读 <strong style={{ color: 'var(--cinnabar)' }}>¥39/次</strong>
               </p>
             </div>
 
             <button type="submit" className="submit-btn" disabled={loading}>
-              {loading ? '命盘生成中，请稍候...' : '支付 ¥39 并获取解读'}
+              {loading ? '正在排盘，请稍候...' : '开始八字排盘'}
             </button>
-
-            <p style={{ textAlign: 'center', color: 'var(--text-secondary)', fontSize: '0.8rem', marginTop: 12 }}>
-              点击支付即表示同意我们的服务条款
-            </p>
           </form>
         </div>
 
@@ -180,37 +256,82 @@ export default function ConsultPage() {
                     <div className="bazi-pillar-label">{label}</div>
                     <div className="bazi-ganzhi">{pillar.gan}{pillar.zhi}</div>
                     <div className="bazi-tenGod">{tenGod}</div>
-                    <div className="bazi-hidden">藏：{pillar.hiddenStems.join('')}</div>
+                    <div className="bazi-hidden">藏：{pillar.hiddenStems.join(' ')}</div>
                   </div>
                 ))}
               </div>
 
-              {/* AI 解读 */}
+              {/* 详细分析 */}
               <div className="analysis-content">
-                {result.analysis.split('\n').map((line: string, i: number) => {
-                  if (line.startsWith('## ')) return <h2 key={i}>{line.replace('## ', '')}</h2>
-                  if (line.startsWith('### ')) return <h3 key={i}>{line.replace('### ', '')}</h3>
-                  if (!line.trim()) return <br key={i} />
-                  return <p key={i}>{line}</p>
-                })}
+                <h2>🎯 日主强弱分析</h2>
+                <p>
+                  <strong>日主强度：</strong>{baziDisplay.dayMasterStrength.level}
+                  （得分：{baziDisplay.dayMasterStrength.score}）
+                </p>
+                <p>{baziDisplay.dayMasterStrength.explanation}</p>
+
+                <h2>✨ 用神与忌神</h2>
+                <p><strong>用神（有利）：</strong>{baziDisplay.usefulGod.join('、')}</p>
+                <p><strong>忌神（不利）：</strong>{baziDisplay.harmfulGod.join('、')}</p>
+
+                <h2>🌟 大运走势</h2>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem', marginTop: '1rem' }}>
+                  {baziDisplay.daYun.slice(0, 5).map((dy: any, i: number) => (
+                    <div key={i} style={{ textAlign: 'center', padding: '1rem', background: '#FAFAFA', borderRadius: '8px' }}>
+                      <div style={{ fontSize: '0.85rem', color: '#666' }}>{dy.age}</div>
+                      <div style={{ fontSize: '1.3rem', fontWeight: 'bold', color: 'var(--ink-black)' }}>{dy.ganZhi}</div>
+                      <div style={{ fontSize: '0.8rem', color: '#888' }}>{dy.startYear}年起</div>
+                    </div>
+                  ))}
+                </div>
+
+                <h2>📊 五行统计</h2>
+                <div style={{ display: 'flex', justifyContent: 'space-around', marginTop: '1rem' }}>
+                  {Object.entries(baziDisplay.wuXingCount).map(([wx, count]) => (
+                    <div key={wx} style={{ textAlign: 'center' }}>
+                      <div style={{ fontSize: '1.5rem' }}>
+                        {wx === '木' ? '🌲' : wx === '火' ? '🔥' : wx === '土' ? '🏔️' : wx === '金' ? '⚔️' : '💧'}
+                      </div>
+                      <div style={{ fontWeight: 'bold' }}>{wx}</div>
+                      <div style={{ color: '#666' }}>{Number(count).toFixed(1)}</div>
+                    </div>
+                  ))}
+                </div>
               </div>
 
-              {/* 支付引导 */}
-              <div className="payment-box">
-                <h4>💡 完整解读需支付 ¥39</h4>
-                <p>以上为基础预览，完整命盘解读包含详细大运流年分析</p>
-                <a
-                  href="https://paypal.me/yourpaypalid"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="paypal-btn"
-                >
-                  PayPal 支付 ¥39
-                </a>
-                <p style={{ marginTop: 10, fontSize: '0.8rem' }}>
-                  或联系 Telegram: @yourid 获取完整报告
-                </p>
-              </div>
+              {/* AI 解读 */}
+              {result.aiAnalysis ? (
+                <div style={{ padding: '2rem', background: '#f8f8f8', borderTop: '3px solid #D4AF37' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
+                    <span style={{ fontSize: '1.5rem' }}>🤖</span>
+                    <h3 style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>AI 深度解读</h3>
+                    {result.aiProvider && (
+                      <span style={{ fontSize: '0.8rem', color: '#666', marginLeft: 'auto' }}>
+                        由 {result.aiProvider} 提供
+                      </span>
+                    )}
+                  </div>
+                  <div style={{ 
+                    lineHeight: 2, 
+                    whiteSpace: 'pre-wrap',
+                    background: 'white',
+                    padding: '1.5rem',
+                    borderRadius: '8px',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.05)'
+                  }}>
+                    {result.aiAnalysis}
+                  </div>
+                </div>
+              ) : result.aiError ? (
+                <div style={{ padding: '2rem', background: '#FFF3E0', borderTop: '3px solid #E65100' }}>
+                  <h4 style={{ color: '#E65100', marginBottom: '0.5rem' }}>⚠️ AI 解读暂时不可用</h4>
+                  <p style={{ color: '#666', fontSize: '0.9rem' }}>
+                    {result.aiError === 'NO_API_KEY' 
+                      ? '管理员尚未配置 AI API Key，请联系管理员开启此功能。' 
+                      : 'AI 服务暂时不可用，请稍后重试。'}
+                  </p>
+                </div>
+              ) : null}
             </div>
           </div>
         )}
