@@ -3,478 +3,331 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 
-// 二十四山向
+// 二十四山向（每山15°，从子山正中0°起）
 const MOUNTAINS_24 = [
-  { name: '壬', angle: 337.5, type: '水' },
-  { name: '子', angle: 0, type: '水' },
-  { name: '癸', angle: 22.5, type: '水' },
-  { name: '丑', angle: 45, type: '土' },
-  { name: '艮', angle: 67.5, type: '土' },
-  { name: '寅', angle: 90, type: '木' },
-  { name: '甲', angle: 112.5, type: '木' },
-  { name: '卯', angle: 135, type: '木' },
-  { name: '乙', angle: 157.5, type: '木' },
-  { name: '辰', angle: 180, type: '土' },
-  { name: '巽', angle: 202.5, type: '木' },
-  { name: '巳', angle: 225, type: '火' },
-  { name: '丙', angle: 247.5, type: '火' },
-  { name: '午', angle: 270, type: '火' },
-  { name: '丁', angle: 292.5, type: '火' },
-  { name: '未', angle: 315, type: '土' },
-  { name: '坤', angle: 337.5, type: '土' },
-  { name: '申', angle: 0, type: '金' },
-  { name: '庚', angle: 22.5, type: '金' },
-  { name: '酉', angle: 45, type: '金' },
-  { name: '辛', angle: 67.5, type: '金' },
-  { name: '戌', angle: 90, type: '土' },
-  { name: '乾', angle: 112.5, type: '金' },
-  { name: '亥', angle: 135, type: '水' },
+  { name: '子', angle: 0, type: '水', wuxing: '水' },
+  { name: '癸', angle: 15, type: '水', wuxing: '水' },
+  { name: '丑', angle: 30, type: '土', wuxing: '土' },
+  { name: '艮', angle: 60, type: '土', wuxing: '土' },
+  { name: '寅', angle: 90, type: '木', wuxing: '木' },
+  { name: '甲', angle: 105, type: '木', wuxing: '木' },
+  { name: '卯', angle: 120, type: '木', wuxing: '木' },
+  { name: '乙', angle: 135, type: '木', wuxing: '木' },
+  { name: '辰', angle: 150, type: '土', wuxing: '土' },
+  { name: '巽', angle: 165, type: '木', wuxing: '木' },
+  { name: '巳', angle: 180, type: '火', wuxing: '火' },
+  { name: '丙', angle: 195, type: '火', wuxing: '火' },
+  { name: '午', angle: 210, type: '火', wuxing: '火' },
+  { name: '丁', angle: 225, type: '火', wuxing: '火' },
+  { name: '未', angle: 240, type: '土', wuxing: '土' },
+  { name: '坤', angle: 255, type: '土', wuxing: '土' },
+  { name: '申', angle: 270, type: '金', wuxing: '金' },
+  { name: '庚', angle: 285, type: '金', wuxing: '金' },
+  { name: '酉', angle: 300, type: '金', wuxing: '金' },
+  { name: '辛', angle: 315, type: '金', wuxing: '金' },
+  { name: '戌', angle: 330, type: '土', wuxing: '土' },
+  { name: '乾', angle: 345, type: '金', wuxing: '金' },
+  { name: '亥', angle: 0, type: '水', wuxing: '水' },
+  { name: '壬', angle: 15, type: '水', wuxing: '水' },
 ]
 
-// 八方位
+// 八方位吉凶分析
 const DIRECTIONS = [
-  { name: '北', angle: 0, wuxing: '水', color: '#1E88E5', desc: '事业、官运' },
-  { name: '东北', angle: 45, wuxing: '土', color: '#8D6E63', desc: '智慧、学业' },
-  { name: '东', angle: 90, wuxing: '木', color: '#43A047', desc: '健康、家庭' },
-  { name: '东南', angle: 135, wuxing: '木', color: '#43A047', desc: '财运、人缘' },
-  { name: '南', angle: 180, wuxing: '火', color: '#E53935', desc: '名声、地位' },
-  { name: '西南', angle: 225, wuxing: '土', color: '#8D6E63', desc: '感情、婚姻' },
-  { name: '西', angle: 270, wuxing: '金', color: '#FFB300', desc: '子孙、喜悦' },
-  { name: '西北', angle: 315, wuxing: '金', color: '#FFB300', desc: '贵人、助力' },
+  { name: '北', angle: 0, wuxing: '水', color: '#1E88E5', desc: '事业、官运、智慧', good: true },
+  { name: '东北', angle: 45, wuxing: '土', color: '#8D6E63', desc: '文昌、学业、出路', good: false },
+  { name: '东', angle: 90, wuxing: '木', color: '#43A047', desc: '健康、家庭、贵人', good: true },
+  { name: '东南', angle: 135, wuxing: '木', color: '#66BB6A', desc: '财运、人缘、名声', good: true },
+  { name: '南', angle: 180, wuxing: '火', color: '#E53935', desc: '名声、地位、文昌', good: true },
+  { name: '西南', angle: 225, wuxing: '土', color: '#A1887F', desc: '感情、婚姻、财运', good: false },
+  { name: '西', angle: 270, wuxing: '金', color: '#FFB300', desc: '子孙、喜悦、桃花', good: true },
+  { name: '西北', angle: 315, wuxing: '金', color: '#FFCA28', desc: '贵人、助力、事业', good: true },
 ]
 
-// 2026年九宫飞星
+// 2026年九宫飞星（九宫飞星每年变化）
 const FLYING_STARS_2026 = [
-  { position: '中宫', star: 2, name: '二黑', type: '凶', desc: '病符星，主疾病' },
-  { position: '正北', star: 7, name: '七赤', type: '凶', desc: '破军星，主盗贼' },
-  { position: '西南', star: 9, name: '九紫', type: '吉', desc: '右弼星，主喜庆' },
-  { position: '正东', star: 4, name: '四绿', type: '平', desc: '文曲星，主学业' },
-  { position: '东南', star: 5, name: '五黄', type: '凶', desc: '廉贞星，主灾祸' },
-  { position: '中西北', star: 6, name: '六白', type: '吉', desc: '武曲星，主偏财' },
-  { position: '正西', star: 8, name: '八白', type: '吉', desc: '左辅星，主正财' },
-  { position: '东北', star: 1, name: '一白', type: '吉', desc: '贪狼星，主桃花' },
-  { position: '正南', star: 3, name: '三碧', type: '凶', desc: '禄存星，主是非' },
+  { position: '正北', star: 7, name: '七赤', type: '凶', desc: '破军星，主口舌、盗贼', color: '#E53935' },
+  { position: '正南', star: 9, name: '九紫', type: '吉', desc: '右弼星，主喜庆、姻缘', color: '#E91E63' },
+  { position: '正东', star: 3, name: '三碧', type: '凶', desc: '禄存星，主官非、争吵', color: '#FF5722' },
+  { position: '正西', star: 5, name: '五黄', type: '大凶', desc: '廉贞星，主疾病、灾祸', color: '#B71C1C' },
+  { position: '东南', star: 1, name: '一白', type: '吉', desc: '贪狼星，主财运、桃花', color: '#2196F3' },
+  { position: '东北', star: 4, name: '四绿', type: '平', desc: '文昌星，主学业、文书', color: '#4CAF50' },
+  { position: '西南', star: 2, name: '二黑', type: '凶', desc: '巨门星，主病符、阴灵', color: '#795548' },
+  { position: '西北', star: 6, name: '六白', type: '吉', desc: '武曲星，主事业、贵人', color: '#607D8B' },
+  { position: '中宫', star: 8, name: '八白', type: '吉', desc: '左辅星，主财运、田产', color: '#FF9800' },
 ]
+
+function getMountainInfo(angle: number) {
+  // 找出最接近的山
+  let closest = MOUNTAINS_24[0]
+  let minDiff = 360
+  for (const m of MOUNTAINS_24) {
+    let diff = Math.abs(m.angle - angle)
+    if (diff > 180) diff = 360 - diff
+    if (diff < minDiff) {
+      minDiff = diff
+      closest = m
+    }
+  }
+  return closest
+}
+
+function getDirectionInfo(angle: number) {
+  // 八方位各占45°
+  const idx = Math.round(angle / 45) % 8
+  return DIRECTIONS[idx]
+}
 
 export default function CompassPage() {
-  const [direction, setDirection] = useState(0)
-  const [location, setLocation] = useState('')
+  const [compassAngle, setCompassAngle] = useState(0)
   const [isAnimating, setIsAnimating] = useState(true)
-  const [selectedTab, setSelectedTab] = useState<'compass' | 'flyingstar'>('compass')
+  const [phoneDirection, setPhoneDirection] = useState<string | null>(null)
 
   useEffect(() => {
+    // 模拟罗盘旋转动画
     if (!isAnimating) return
     const interval = setInterval(() => {
-      setDirection(prev => (prev + 0.5) % 360)
+      setCompassAngle(prev => (prev + 0.5) % 360)
     }, 50)
     return () => clearInterval(interval)
   }, [isAnimating])
 
-  const getCurrentDirection = () => {
-    const normalized = (direction % 360 + 360) % 360
-    return DIRECTIONS.reduce((closest, dir) => {
-      const diff = Math.abs(normalized - dir.angle)
-      const closestDiff = Math.abs(normalized - closest.angle)
-      return diff < closestDiff ? dir : closest
-    })
+  useEffect(() => {
+    // 尝试获取设备方向
+    if (typeof window !== 'undefined' && 'DeviceOrientationEvent' in window) {
+      const handleOrientation = (e: any) => {
+        if (e.alpha !== null) {
+          setCompassAngle(360 - e.alpha)
+          setPhoneDirection(getDirectionInfo(360 - e.alpha).name)
+        }
+      }
+      window.addEventListener('deviceorientation', handleOrientation)
+      return () => window.removeEventListener('deviceorientation', handleOrientation)
+    }
+  }, [])
+
+  const handleManualAngle = (angle: number) => {
+    setIsAnimating(false)
+    setCompassAngle(angle)
   }
 
-  const currentDir = getCurrentDirection()
+  const mountain = getMountainInfo(compassAngle)
+  const direction = getDirectionInfo(compassAngle)
 
-  const getMountain = (angle: number) => {
-    const normalized = (angle % 360 + 360) % 360
-    return MOUNTAINS_24.reduce((closest, m) => {
-      const diff = Math.abs(normalized - m.angle)
-      const closestDiff = Math.abs(normalized - closest.angle)
-      return diff < closestDiff ? m : closest
-    })
+  const wuxingColor: Record<string, string> = {
+    '木': '#4CAF50',
+    '火': '#E53935',
+    '土': '#795548',
+    '金': '#FFB300',
+    '水': '#1E88E5',
   }
 
   return (
-    <div>
+    <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900">
       {/* 导航栏 */}
-      <nav className="navbar">
-        <div className="navbar-inner">
-          <Link href="/" className="logo">
-            <div className="logo-icon">☯</div>
-            <span className="logo-text">命理大师</span>
+      <nav className="bg-slate-900/80 backdrop-blur-md border-b border-amber-500/20 sticky top-0 z-50">
+        <div className="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
+          <Link href="/" className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center text-slate-900 font-bold text-lg">
+              命
+            </div>
+            <span className="text-amber-400 font-bold text-xl tracking-wider">命理大师</span>
           </Link>
-          <Link href="/" className="nav-cta">返回首页</Link>
+          <Link href="/" className="text-slate-400 hover:text-amber-400 transition-colors text-sm">
+            ← 返回首页
+          </Link>
         </div>
       </nav>
 
-      <div className="consult-page">
-        <div className="page-header">
-          <h1 className="page-title">风水罗盘</h1>
-          <p className="breadcrumb">
-            <Link href="/">首页</Link> / 风水罗盘
-          </p>
+      <div className="max-w-4xl mx-auto px-4 py-12">
+        {/* 标题区 */}
+        <div className="text-center mb-10">
+          <h1 className="text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-amber-400 to-amber-300 mb-4">
+            风水罗盘
+          </h1>
+          <p className="text-slate-400 text-lg">传统风水学与现代科技结合，洞察空间能量</p>
         </div>
 
-        {/* 标签切换 */}
-        <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem' }}>
-          <button
-            onClick={() => setSelectedTab('compass')}
-            style={{
-              flex: 1,
-              padding: '1rem',
-              border: 'none',
-              borderRadius: '8px',
-              background: selectedTab === 'compass' ? 'linear-gradient(135deg, #8B0000 0%, #A52A2A 100%)' : '#f0f0f0',
-              color: selectedTab === 'compass' ? 'white' : '#666',
-              fontWeight: 'bold',
-              cursor: 'pointer',
-            }}
-          >
-            🧭 电子罗盘
-          </button>
-          <button
-            onClick={() => setSelectedTab('flyingstar')}
-            style={{
-              flex: 1,
-              padding: '1rem',
-              border: 'none',
-              borderRadius: '8px',
-              background: selectedTab === 'flyingstar' ? 'linear-gradient(135deg, #8B0000 0%, #A52A2A 100%)' : '#f0f0f0',
-              color: selectedTab === 'flyingstar' ? 'white' : '#666',
-              fontWeight: 'bold',
-              cursor: 'pointer',
-            }}
-          >
-            ⭐ 九宫飞星
-          </button>
-        </div>
-
-        {selectedTab === 'compass' ? (
-          <div className="form-card">
-            <div style={{ textAlign: 'center', padding: '2rem' }}>
-              {/* 罗盘 */}
-              <div style={{
-                width: '320px',
-                height: '320px',
-                margin: '0 auto 2rem',
-                position: 'relative',
-                borderRadius: '50%',
-                background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)',
-                boxShadow: '0 8px 32px rgba(0,0,0,0.3), inset 0 2px 4px rgba(255,255,255,0.1)',
-              }}>
-                {/* 外圈刻度 */}
-                <div style={{
-                  position: 'absolute',
-                  inset: '15px',
-                  borderRadius: '50%',
-                  border: '2px solid #D4AF37',
-                }}>
-                  {/* 二十四山向 */}
-                  {MOUNTAINS_24.map((m, i) => {
-                    const angle = m.angle - direction
-                    const rad = (angle * Math.PI) / 180
-                    const x = 50 + 42 * Math.sin(rad)
-                    const y = 50 - 42 * Math.cos(rad)
-                    return (
-                      <div
-                        key={m.name}
-                        style={{
-                          position: 'absolute',
-                          left: `${x}%`,
-                          top: `${y}%`,
-                          transform: 'translate(-50%, -50%)',
-                          fontSize: '0.75rem',
-                          color: m.type === '水' ? '#1E88E5' : m.type === '木' ? '#43A047' : m.type === '火' ? '#E53935' : m.type === '金' ? '#FFB300' : '#8D6E63',
-                          fontWeight: 'bold',
-                        }}
-                      >
-                        {m.name}
-                      </div>
-                    )
-                  })}
-                  
-                  {/* 八方位 */}
-                  {DIRECTIONS.map((d) => {
-                    const angle = d.angle - direction
-                    const rad = (angle * Math.PI) / 180
-                    const x = 50 + 35 * Math.sin(rad)
-                    const y = 50 - 35 * Math.cos(rad)
-                    return (
-                      <div
-                        key={d.name}
-                        style={{
-                          position: 'absolute',
-                          left: `${x}%`,
-                          top: `${y}%`,
-                          transform: 'translate(-50%, -50%)',
-                          fontSize: '0.9rem',
-                          color: d.color,
-                          fontWeight: 'bold',
-                        }}
-                      >
-                        {d.name}
-                      </div>
-                    )
-                  })}
-                </div>
-                
-                {/* 内圈 */}
-                <div style={{
-                  position: 'absolute',
-                  inset: '50px',
-                  borderRadius: '50%',
-                  border: '1px solid rgba(212,175,55,0.3)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}>
-                  {/* 八卦符号 */}
-                  {['☰', '☱', '☲', '☳', '☴', '☵', '☶', '☷'].map((gua, i) => {
-                    const angle = i * 45 - direction
-                    const rad = (angle * Math.PI) / 180
-                    const x = 50 + 25 * Math.sin(rad)
-                    const y = 50 - 25 * Math.cos(rad)
-                    return (
-                      <div
-                        key={i}
-                        style={{
-                          position: 'absolute',
-                          left: `${x}%`,
-                          top: `${y}%`,
-                          transform: 'translate(-50%, -50%)',
-                          fontSize: '1.2rem',
-                          color: 'rgba(255,255,255,0.5)',
-                        }}
-                      >
-                        {gua}
-                      </div>
-                    )
-                  })}
-                  
-                  {/* 中心点 */}
-                  <div style={{
-                    width: '24px',
-                    height: '24px',
-                    background: 'linear-gradient(135deg, #D4AF37 0%, #F4E8C1 100%)',
-                    borderRadius: '50%',
-                    position: 'relative',
-                    zIndex: 10,
-                    boxShadow: '0 0 20px rgba(212,175,55,0.5)',
-                  }} />
-                </div>
-                
-                {/* 指针 */}
-                <div style={{
-                  position: 'absolute',
-                  top: '10px',
-                  left: '50%',
-                  transform: 'translateX(-50%)',
-                  width: '0',
-                  height: '0',
-                  borderLeft: '10px solid transparent',
-                  borderRight: '10px solid transparent',
-                  borderTop: '15px solid #E53935',
-                  zIndex: 20,
-                  filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))',
-                }} />
-              </div>
-
-              {/* 控制按钮 */}
-              <div style={{ marginBottom: '1.5rem' }}>
-                <button
-                  onClick={() => setIsAnimating(!isAnimating)}
-                  style={{
-                    padding: '0.75rem 1.5rem',
-                    background: isAnimating ? '#E53935' : '#43A047',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '8px',
-                    cursor: 'pointer',
-                    fontWeight: 'bold',
-                  }}
-                >
-                  {isAnimating ? '⏸ 停止' : '▶ 开始'}
-                </button>
-              </div>
-
-              {/* 当前方向信息 */}
-              <div style={{
-                background: 'linear-gradient(135deg, rgba(139,0,0,0.1) 0%, rgba(212,175,55,0.1) 100%)',
-                padding: '1.5rem',
-                borderRadius: '12px',
-                marginBottom: '1.5rem',
-              }}>
-                <div style={{ display: 'flex', justifyContent: 'space-around', alignItems: 'center' }}>
-                  <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: '0.85rem', color: '#666' }}>当前方位</div>
-                    <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: currentDir.color }}>
-                      {currentDir.name}
-                    </div>
-                  </div>
-                  <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: '0.85rem', color: '#666' }}>精确角度</div>
-                    <div style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>
-                      {Math.round(direction % 360)}°
-                    </div>
-                  </div>
-                  <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: '0.85rem', color: '#666' }}>二十四山</div>
-                    <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#D4AF37' }}>
-                      {getMountain(direction).name}
-                    </div>
-                  </div>
-                </div>
-                <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid rgba(0,0,0,0.1)' }}>
-                  <span style={{ color: '#666' }}>五行属性：</span>
-                  <span style={{ color: currentDir.color, fontWeight: 'bold' }}>{currentDir.wuxing}</span>
-                  <span style={{ color: '#666', marginLeft: '1rem' }}>主掌：</span>
-                  <span style={{ fontWeight: 'bold' }}>{currentDir.desc}</span>
-                </div>
-              </div>
-
-              {/* 方位分析 */}
-              <div style={{ textAlign: 'left' }}>
-                <h3 style={{ marginBottom: '1rem', color: '#1a1a1a' }}>📍 八方位吉凶分析（2026年）</h3>
-                <div style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                  gap: '1rem',
-                }}>
-                  {DIRECTIONS.map((d) => (
-                    <div key={d.name} style={{
-                      padding: '1rem',
-                      background: d.name === currentDir.name ? `${d.color}15` : '#f8f8f8',
-                      borderRadius: '8px',
-                      borderLeft: `4px solid ${d.color}`,
-                      border: d.name === currentDir.name ? `2px solid ${d.color}` : 'none',
-                    }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <span style={{ fontWeight: 'bold', color: d.color }}>{d.name}</span>
-                        <span style={{ fontSize: '0.8rem', color: '#666' }}>{d.wuxing}</span>
-                      </div>
-                      <div style={{ fontSize: '0.85rem', color: '#666', marginTop: '0.25rem' }}>{d.desc}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* 输入位置 */}
-              <div style={{ marginTop: '2rem' }}>
-                <input
-                  type="text"
-                  placeholder="输入您的位置（如：北京、上海）"
-                  value={location}
-                  onChange={(e) => setLocation(e.target.value)}
-                  style={{
-                    width: '100%',
-                    maxWidth: '400px',
-                    padding: '0.75rem 1rem',
-                    border: '2px solid #e5e5e5',
-                    borderRadius: '8px',
-                    fontSize: '1rem',
-                  }}
-                />
-              </div>
-
-              <button className="submit-btn" style={{ marginTop: '1rem', maxWidth: '400px' }}>
-                获取详细风水分析
-              </button>
-            </div>
-          </div>
-        ) : (
-          /* 九宫飞星 */
-          <div className="form-card">
-            <div style={{ padding: '2rem' }}>
-              <h3 style={{ textAlign: 'center', marginBottom: '1.5rem' }}>2026年（丙午年）九宫飞星图</h3>
+        {/* 罗盘主体 */}
+        <div className="bg-slate-800/50 backdrop-blur-sm rounded-3xl border border-amber-500/20 p-8 mb-8">
+          {/* 罗盘SVG */}
+          <div className="relative w-full aspect-square max-w-md mx-auto mb-8">
+            <svg viewBox="0 0 400 400" className="w-full h-full drop-shadow-2xl">
+              {/* 最外圈 - 二十四山 */}
+              <circle cx="200" cy="200" r="190" fill="none" stroke="#D4AF37" strokeWidth="1" opacity="0.3"/>
               
-              {/* 九宫格 */}
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(3, 1fr)',
-                gap: '0.5rem',
-                maxWidth: '400px',
-                margin: '0 auto 2rem',
-              }}>
-                {[
-                  FLYING_STARS_2026[7], FLYING_STARS_2026[0], FLYING_STARS_2026[1],
-                  FLYING_STARS_2026[6], FLYING_STARS_2026[8], FLYING_STARS_2026[2],
-                  FLYING_STARS_2026[5], FLYING_STARS_2026[4], FLYING_STARS_2026[3],
-                ].map((star, i) => (
-                  <div
+              {/* 罗盘刻度 */}
+              {Array.from({ length: 360 }, (_, i) => {
+                const angle = (i - 90) * Math.PI / 180
+                const isMain = i % 30 === 0
+                const isMedium = i % 15 === 0 && !isMain
+                const isSmall = i % 5 === 0 && !isMedium && !isMain
+                const r1 = isMain ? 165 : isMedium ? 172 : isSmall ? 178 : 182
+                const r2 = 188
+                return (
+                  <line
                     key={i}
-                    style={{
-                      aspectRatio: '1',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      background: star.type === '吉' ? '#E8F5E9' : star.type === '凶' ? '#FFEBEE' : '#FFF3E0',
-                      borderRadius: '8px',
-                      border: `2px solid ${star.type === '吉' ? '#43A047' : star.type === '凶' ? '#E53935' : '#FF9800'}`,
-                    }}
+                    x1={200 + r1 * Math.cos(angle)}
+                    y1={200 + r1 * Math.sin(angle)}
+                    x2={200 + r2 * Math.cos(angle)}
+                    y2={200 + r2 * Math.sin(angle)}
+                    stroke={isMain ? '#D4AF37' : isMedium ? '#D4AF3780' : '#D4AF3730'}
+                    strokeWidth={isMain ? 2 : 1}
+                  />
+                )
+              })}
+
+              {/* 天干地支标注 */}
+              {MOUNTAINS_24.filter((_, i) => i % 2 === 0).map((m, i) => {
+                const angle = (m.angle - 90) * Math.PI / 180
+                const r = 155
+                return (
+                  <text
+                    key={m.name}
+                    x={200 + r * Math.cos(angle)}
+                    y={200 + r * Math.sin(angle)}
+                    textAnchor="middle"
+                    dominantBaseline="middle"
+                    fill={wuxingColor[m.wuxing] || '#D4AF37'}
+                    fontSize="14"
+                    fontWeight="bold"
+                    transform={`rotate(${m.angle}, ${200 + r * Math.cos(angle)}, ${200 + r * Math.sin(angle)})`}
                   >
-                    <div style={{ fontSize: '0.75rem', color: '#666' }}>{star.position}</div>
-                    <div style={{ 
-                      fontSize: '1.5rem', 
-                      fontWeight: 'bold',
-                      color: star.type === '吉' ? '#43A047' : star.type === '凶' ? '#E53935' : '#FF9800'
-                    }}>
-                      {star.star}
-                    </div>
-                    <div style={{ fontSize: '0.8rem', fontWeight: 'bold' }}>{star.name}</div>
-                  </div>
-                ))}
-              </div>
+                    {m.name}
+                  </text>
+                )
+              })}
 
-              {/* 飞星说明 */}
-              <div style={{ display: 'grid', gap: '0.75rem' }}>
-                {FLYING_STARS_2026.filter(s => s.position !== '中宫').map((star) => (
-                  <div key={star.position} style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '1rem',
-                    padding: '0.75rem 1rem',
-                    background: star.type === '吉' ? '#E8F5E9' : star.type === '凶' ? '#FFEBEE' : '#FFF3E0',
-                    borderRadius: '8px',
-                  }}>
-                    <div style={{
-                      width: '36px',
-                      height: '36px',
-                      borderRadius: '50%',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      background: star.type === '吉' ? '#43A047' : star.type === '凶' ? '#E53935' : '#FF9800',
-                      color: 'white',
-                      fontWeight: 'bold',
-                    }}>
-                      {star.star}
-                    </div>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontWeight: 'bold' }}>{star.position} · {star.name}</div>
-                      <div style={{ fontSize: '0.85rem', color: '#666' }}>{star.desc}</div>
-                    </div>
-                    <span style={{
-                      padding: '0.25rem 0.5rem',
-                      borderRadius: '4px',
-                      fontSize: '0.75rem',
-                      background: star.type === '吉' ? '#43A047' : star.type === '凶' ? '#E53935' : '#FF9800',
-                      color: 'white',
-                    }}>
-                      {star.type}
-                    </span>
-                  </div>
-                ))}
-              </div>
+              {/* 五行圆环 */}
+              <circle cx="200" cy="200" r="125" fill="none" stroke="#D4AF37" strokeWidth="0.5" opacity="0.5"/>
+              
+              {/* 内圈 - 八卦 */}
+              <circle cx="200" cy="200" r="80" fill="#1a1a1a" stroke="#D4AF37" strokeWidth="1.5"/>
+              
+              {/* 指针 - 动态旋转 */}
+              <g transform={`rotate(${compassAngle}, 200, 200)`}>
+                <polygon points="200,50 195,200 200,220 205,200" fill="#E53935" opacity="0.9"/>
+                <polygon points="200,350 195,200 200,180 205,200" fill="#1a1a1a" stroke="#666" strokeWidth="1"/>
+                <circle cx="200" cy="200" r="8" fill="#D4AF37"/>
+              </g>
 
-              <div style={{ marginTop: '2rem', padding: '1rem', background: '#f8f8f8', borderRadius: '8px' }}>
-                <h4 style={{ marginBottom: '0.5rem' }}>💡 2026年风水建议</h4>
-                <ul style={{ paddingLeft: '1.5rem', color: '#666', lineHeight: 1.8 }}>
-                  <li><strong>正西（八白财位）</strong>：今年财位，宜摆放招财物品</li>
-                  <li><strong>东北（一白桃花）</strong>：桃花位，单身者可催旺姻缘</li>
-                  <li><strong>东南（五黄煞位）</strong>：今年凶位，宜静不宜动</li>
-                  <li><strong>正南（三碧是非）</strong>：是非位，避免红色装饰</li>
-                </ul>
-              </div>
+              {/* 中心点 */}
+              <circle cx="200" cy="200" r="4" fill="#D4AF37"/>
+
+              {/* 北东南西标注 */}
+              {['北', '东', '南', '西'].map((dir, i) => {
+                const angle = (i * 90 - 90) * Math.PI / 180
+                const r = 195
+                return (
+                  <text
+                    key={dir}
+                    x={200 + r * Math.cos(angle)}
+                    y={200 + r * Math.sin(angle)}
+                    textAnchor="middle"
+                    dominantBaseline="middle"
+                    fill="#E53935"
+                    fontSize="16"
+                    fontWeight="bold"
+                  >
+                    {dir}
+                  </text>
+                )
+              })}
+            </svg>
+
+            {/* 当前读数 */}
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-slate-900/90 px-6 py-2 rounded-full border border-amber-500/50">
+              <span className="text-amber-400 font-bold text-xl">{compassAngle.toFixed(1)}°</span>
+              <span className="text-slate-400 ml-2">{mountain.name}山 {mountain.wuxing}气</span>
             </div>
           </div>
-        )}
+
+          {/* 控制按钮 */}
+          <div className="flex justify-center gap-4 mb-6">
+            <button
+              onClick={() => { setIsAnimating(!isAnimating); if (!isAnimating) setPhoneDirection(null) }}
+              className="px-6 py-2 bg-amber-500 hover:bg-amber-400 text-slate-900 font-bold rounded-lg transition-colors"
+            >
+              {isAnimating ? '⏸ 暂停' : '▶ 开始'}
+            </button>
+            <button
+              onClick={() => { setIsAnimating(false); setPhoneDirection(null); handleManualAngle(0) }}
+              className="px-6 py-2 border border-amber-500 text-amber-400 hover:bg-amber-500/10 rounded-lg transition-colors"
+            >
+              指北
+            </button>
+            <button
+              onClick={() => { setIsAnimating(false); setPhoneDirection(null); handleManualAngle(90) }}
+              className="px-6 py-2 border border-amber-500 text-amber-400 hover:bg-amber-500/10 rounded-lg transition-colors"
+            >
+              指东
+            </button>
+          </div>
+
+          {/* 手机陀螺仪提示 */}
+          {phoneDirection && (
+            <div className="text-center text-green-400 text-sm mb-4">
+              📱 检测到设备方向：{phoneDirection} — 点击"暂停"可手动调整
+            </div>
+          )}
+
+          {/* 当前方位分析 */}
+          <div className="bg-slate-900/50 rounded-xl p-6 border border-slate-700">
+            <h3 className="text-amber-400 font-bold mb-4 text-center">📍 {direction.name} — {mountain.name}山 {mountain.type}卦</h3>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="text-center p-4 bg-slate-800/50 rounded-lg">
+                <div className="text-slate-400 text-sm mb-1">五行</div>
+                <div className="text-3xl" style={{ color: wuxingColor[direction.wuxing] }}>{direction.wuxing}</div>
+              </div>
+              <div className="text-center p-4 bg-slate-800/50 rounded-lg">
+                <div className="text-slate-400 text-sm mb-1">吉凶</div>
+                <div className={`text-3xl ${direction.good ? 'text-green-400' : 'text-red-400'}`}>
+                  {direction.good ? '吉' : '平'}
+                </div>
+              </div>
+            </div>
+            <p className="text-slate-400 text-sm text-center mt-4">{direction.desc}</p>
+          </div>
+        </div>
+
+        {/* 2026年九宫飞星 */}
+        <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-amber-500/20 p-6 mb-8">
+          <h2 className="text-xl font-bold text-amber-400 mb-4 text-center">🌟 2026年九宫飞星</h2>
+          <div className="grid grid-cols-3 gap-3">
+            {FLYING_STARS_2026.map((star) => (
+              <div key={star.position} className="bg-slate-900/50 rounded-lg p-3 text-center border border-slate-700">
+                <div className="text-slate-500 text-xs mb-1">{star.position}</div>
+                <div className="text-2xl font-bold" style={{ color: star.color }}>{star.name}</div>
+                <div className={`text-xs mt-1 ${star.type === '吉' ? 'text-green-400' : star.type === '大凶' ? 'text-red-600' : 'text-yellow-400'}`}>
+                  {star.type}
+                </div>
+                <div className="text-slate-500 text-xs mt-1">{star.desc}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* 方位说明 */}
+        <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-amber-500/20 p-6">
+          <h2 className="text-xl font-bold text-amber-400 mb-4 text-center">🧭 八方位吉凶一览</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {DIRECTIONS.map((dir) => (
+              <div key={dir.name} className="bg-slate-900/50 rounded-lg p-3 border border-slate-700">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-bold" style={{ backgroundColor: dir.color }}>
+                    {dir.name[0]}
+                  </div>
+                  <div>
+                    <div className="text-slate-200 font-medium">{dir.name}</div>
+                    <div className="text-xs" style={{ color: dir.color }}>{dir.wuxing}气</div>
+                  </div>
+                </div>
+                <div className={`text-xs px-2 py-1 rounded ${dir.good ? 'bg-green-500/20 text-green-400' : 'bg-yellow-500/20 text-yellow-400'}`}>
+                  {dir.good ? '✓ 吉利方位' : '○ 需注意'}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   )
