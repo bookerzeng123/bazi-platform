@@ -343,7 +343,37 @@ export default function ConsultPage() {
                       : 'AI 服务暂时不可用，请稍后重试。'}
                   </p>
                 </div>
-              ) : null}
+              ) : (
+                /* 未解锁 AI 解读时的支付引导 */
+                <div style={{ padding: '2rem', background: 'linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%)', borderTop: '3px solid #D4AF37' }}>
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>🔮</div>
+                    <h3 style={{ fontSize: '1.2rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>
+                      解锁 AI 深度解读
+                    </h3>
+                    <p style={{ color: '#666', marginBottom: '1rem', maxWidth: '400px', margin: '0 auto 1rem' }}>
+                      获取专业命理大师级别的详细分析：性格特点、事业建议、财运预测、姻缘指导、健康提示
+                    </p>
+                    <div style={{ 
+                      display: 'inline-flex', 
+                      alignItems: 'center', 
+                      gap: '0.5rem',
+                      background: '#0070BA',
+                      color: 'white',
+                      padding: '0.875rem 1.5rem',
+                      borderRadius: '8px',
+                      fontWeight: '600',
+                      cursor: 'pointer'
+                    }}>
+                      <span>💳</span>
+                      <span>PayPal 支付 $5.99 解锁</span>
+                    </div>
+                    <p style={{ fontSize: '0.8rem', color: '#888', marginTop: '0.75rem' }}>
+                      安全支付 · 即时解锁 · 永久查看
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}
