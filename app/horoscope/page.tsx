@@ -34,7 +34,87 @@ function getZodiacSign(month: number, day: number) {
   return ZODIAC_SIGNS[0]
 }
 
-// 12星座的每日运势模板（基于星座特质 + 每日变化）
+// 每个星座的固定幸运色（基于星座元素和守护星属性）
+const SIGN_LUCKY_COLORS: Record<string, string[]> = {
+  '白羊座': ['红色', '橙色', '金色'],      // 火象 - 红色系
+  '金牛座': ['绿色', '黄色', '棕色'],     // 土象 - 大地色
+  '双子座': ['黄色', '银色', '灰色'],     // 风象 - 明亮色
+  '巨蟹座': ['白色', '银色', '浅蓝色'],   // 水象 - 月光色
+  '狮子座': ['金色', '橙色', '黄色'],     // 火象 - 太阳色
+  '处女座': ['深绿色', '棕色', '米色'],   // 土象 - 自然色
+  '天秤座': ['粉色', '浅蓝色', '白色'],   // 风象 - 优雅色
+  '天蝎座': ['深红色', '黑色', '紫色'],   // 水象 - 神秘色
+  '射手座': ['紫色', '深蓝色', '红色'],   // 火象 - 冒险色
+  '摩羯座': ['黑色', '深灰色', '棕色'],   // 土象 - 沉稳色
+  '水瓶座': ['蓝色', '青色', '紫色'],     // 风象 - 创新色
+  '双鱼座': ['海蓝色', '紫色', '绿色'],   // 水象 - 海洋色
+}
+
+// 每个星座的固定吉利方位
+const SIGN_DIRECTIONS: Record<string, string[]> = {
+  '白羊座': ['东', '东南', '南'],
+  '金牛座': ['西南', '东北', '北'],
+  '双子座': ['东', '东南', '西北'],
+  '巨蟹座': ['北', '东北', '东'],
+  '狮子座': ['南', '东南', '东'],
+  '处女座': ['西南', '东北', '西'],
+  '天秤座': ['东南', '西北', '东'],
+  '天蝎座': ['北', '东北', '西'],
+  '射手座': ['东南', '南', '东'],
+  '摩羯座': ['西南', '东北', '北'],
+  '水瓶座': ['北', '东', '东南'],
+  '双鱼座': ['北', '东北', '东'],
+}
+
+// 每个星座的固定幸运数字
+const SIGN_LUCKY_NUMBERS: Record<string, number[]> = {
+  '白羊座': [6, 9, 18, 27, 36],
+  '金牛座': [1, 4, 11, 22, 33],
+  '双子座': [5, 14, 23, 32, 41],
+  '巨蟹座': [2, 7, 16, 25, 34],
+  '狮子座': [1, 8, 17, 26, 35],
+  '处女座': [5, 14, 23, 32, 44],
+  '天秤座': [4, 13, 22, 31, 40],
+  '天蝎座': [8, 11, 17, 26, 35],
+  '射手座': [3, 9, 14, 23, 32],
+  '摩羯座': [4, 8, 13, 22, 31],
+  '水瓶座': [4, 7, 16, 25, 34],
+  '双鱼座': [3, 7, 12, 21, 30],
+}
+
+// 每个星座的固定幸运食物
+const SIGN_FOODS: Record<string, string[]> = {
+  '白羊座': ['辣椒', '牛肉', '草莓', '番茄'],
+  '金牛座': ['牛排', '苹果', '梨', '燕麦'],
+  '双子座': ['坚果', '柠檬', '蓝莓', '巧克力'],
+  '巨蟹座': ['牛奶', '西瓜', '生菜', '螃蟹'],
+  '狮子座': ['烤肉', '芒果', '橙子', '葡萄'],
+  '处女座': ['沙拉', '猕猴桃', '酸奶', '燕麦'],
+  '天秤座': ['草莓', '蜂蜜', '苹果', '鳄梨'],
+  '天蝎座': ['咖啡', '石榴', '葡萄', '红酒'],
+  '射手座': ['羊肉', '菠萝', '橙子', '香蕉'],
+  '摩羯座': ['根茎蔬菜', '黑豆', '核桃', '红枣'],
+  '水瓶座': ['奇异果', '杏仁', '绿茶', '火龙果'],
+  '双鱼座': ['海带', '紫菜', '葡萄', '西瓜'],
+}
+
+// 每个星座的固定适宜活动
+const SIGN_ACTIVITIES: Record<string, string[]> = {
+  '白羊座': ['跑步', '健身', '团队运动', '户外探险'],
+  '金牛座': ['瑜伽', '园艺', '烹饪', '听音乐'],
+  '双子座': ['阅读', '写作', '社交', '学习新技能'],
+  '巨蟹座': ['陪伴家人', '烹饪', '冥想', '看老电影'],
+  '狮子座': ['表演', '聚会', '创意活动', '演讲'],
+  '处女座': ['整理房间', '规划工作', '学习', '健康检查'],
+  '天秤座': ['艺术创作', '社交活动', '购物', '美容护理'],
+  '天蝎座': ['深度阅读', '冥想', '研究', '心理咨询'],
+  '射手座': ['旅行', '学习外语', '户外活动', '哲学思考'],
+  '摩羯座': ['规划未来', '登山', '学习理财', '职业发展'],
+  '水瓶座': ['社交聚会', '志愿服务', '创新项目', '观看演出'],
+  '双鱼座': ['艺术创作', '听音乐', '冥想', '海边散步'],
+}
+
+// 12星座的每日运势模板
 const HOROSCOPE_TEMPLATES: Record<string, {
   overall: string[]
   love: string[]
@@ -234,7 +314,7 @@ const HOROSCOPE_TEMPLATES: Record<string, {
     ],
     health: [
       '今日身体状况良好，但要注意肾脏健康。多喝水，避免熬夜。',
-      '可能会有些皮肤问题，建议注意保湿和防晒。',
+      '可能会有一些皮肤问题，建议注意保湿和防晒。',
       '健康运势上升，适合进行一些美妆或护肤工作。让自己更美丽。',
     ],
   },
@@ -396,16 +476,13 @@ const ZODIAC_MODIFIERS: Record<string, { love: number; career: number; money: nu
   '双鱼座': { overall: 0, love: 1, career: -1, money: -1, health: 0 },
 }
 
-// 基于文本内容判断星级（确保星级与文案一致）
+// 基于文本内容判断星级
 function analyzeTextRating(text: string, baseRating: number, zodiacMod: number): number {
   let rating = baseRating + zodiacMod
   
-  // 积极关键词
-  const positiveKeywords = ['极佳', '旺盛', '极佳', '上升', '顺利', '强劲', '稳定', '极佳', '出色', '极佳', '好运', '美丽', '幸福', '收获']
-  // 平淡关键词
-  const neutralKeywords = ['平稳', '一般', '不错', '可以', '稳定', '平稳', '普通']
-  // 消极关键词
-  const negativeKeywords = ['瓶颈', '挑战', '压力', '注意', '避免', '小心', '不安', '紧张', '不佳', '低落', '不足']
+  const positiveKeywords = ['极佳', '旺盛', '上升', '顺利', '强劲', '稳定', '出色', '好运', '美丽', '幸福', '收获', '成功', '旺盛', '极佳', '极佳']
+  const neutralKeywords = ['平稳', '一般', '不错', '可以', '稳定', '平稳', '普通', '有时', '可能']
+  const negativeKeywords = ['瓶颈', '挑战', '压力', '注意', '避免', '小心', '不安', '紧张', '不佳', '低落', '不足', '难度', '困难', '低']
   
   let positiveCount = 0
   let negativeCount = 0
@@ -417,13 +494,14 @@ function analyzeTextRating(text: string, baseRating: number, zodiacMod: number):
     if (text.includes(kw)) negativeCount++
   }
   
-  if (positiveCount > negativeCount) rating = Math.min(5, rating + 1)
+  if (positiveCount > negativeCount + 1) rating = Math.min(5, rating + 1)
+  else if (positiveCount > negativeCount) rating = Math.min(5, rating)
   else if (negativeCount > positiveCount) rating = Math.max(1, rating - 1)
   
   return Math.max(1, Math.min(5, rating))
 }
 
-function generateHoroscope(signName: string, date: Date) {
+function generateHoroscope(signName: string, birthMonth: number, birthDay: number) {
   const templates = HOROSCOPE_TEMPLATES[signName]
   if (!templates) {
     return null
@@ -431,16 +509,16 @@ function generateHoroscope(signName: string, date: Date) {
   
   const modifiers = ZODIAC_MODIFIERS[signName] || { love: 0, career: 0, money: 0, health: 0, overall: 0 }
   
-  // 基于日期生成稳定的伪随机种子
-  const dayKey = `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`
-  const seed = signName.charCodeAt(0) * 1000 + signName.charCodeAt(1) * 100 + dayKey.split('-').reduce((a, b) => a + parseInt(b), 0)
+  // 基于用户生日生成固定的伪随机种子（不是当天日期！）
+  // 这样同一个用户查询永远是同一个结果
+  const seed = signName.charCodeAt(0) * 1000 + signName.charCodeAt(1) * 100 + birthMonth * 31 + birthDay
   
-  // 选择今日运势文案
-  const overallIdx = seed % templates.overall.length
-  const loveIdx = seed % templates.love.length
-  const careerIdx = seed % templates.career.length
-  const moneyIdx = seed % templates.money.length
-  const healthIdx = seed % templates.health.length
+  // 选择运势文案
+  const overallIdx = (seed % templates.overall.length + templates.overall.length) % templates.overall.length
+  const loveIdx = (seed % templates.love.length + templates.love.length) % templates.love.length
+  const careerIdx = (seed % templates.career.length + templates.career.length) % templates.career.length
+  const moneyIdx = (seed % templates.money.length + templates.money.length) % templates.money.length
+  const healthIdx = (seed % templates.health.length + templates.health.length) % templates.health.length
   
   const overallText = templates.overall[overallIdx]
   const loveText = templates.love[loveIdx]
@@ -448,28 +526,28 @@ function generateHoroscope(signName: string, date: Date) {
   const moneyText = templates.money[moneyIdx]
   const healthText = templates.health[healthIdx]
   
-  // 基于文案内容计算星级（确保星级与文案一致）
+  // 基于文案内容计算星级
   const overallRating = analyzeTextRating(overallText, 3, modifiers.overall)
   const loveRating = analyzeTextRating(loveText, 3, modifiers.love)
   const careerRating = analyzeTextRating(careerText, 3, modifiers.career)
   const moneyRating = analyzeTextRating(moneyText, 3, modifiers.money)
   const healthRating = analyzeTextRating(healthText, 3, modifiers.health)
   
-  // 幸运信息
-  const colors = ['红色', '蓝色', '绿色', '黄色', '紫色', '白色', '粉色', '橙色', '金色', '银色']
-  const directions = ['东', '南', '西', '北', '东南', '东北', '西南', '西北']
-  const foods = ['苹果', '葡萄', '西瓜', '草莓', '蓝莓', '芒果', '橙子', '柠檬', '猕猴桃', '樱桃']
-  const activities = ['阅读', '冥想', '运动', '听音乐', '散步', '瑜伽', '写日记', '烹饪', '园艺', '摄影']
+  // 固定幸运信息（基于星座，与日期无关）
+  const colors = SIGN_LUCKY_COLORS[signName] || ['红色', '黄色', '绿色']
+  const directions = SIGN_DIRECTIONS[signName] || ['东', '南', '西']
+  const numbers = SIGN_LUCKY_NUMBERS[signName] || [7]
+  const foods = SIGN_FOODS[signName] || ['苹果']
+  const activities = SIGN_ACTIVITIES[signName] || ['运动']
   
   const lucky = {
-    number: ((seed * 7) % 99) + 1,
+    number: numbers[seed % numbers.length],
     color: colors[seed % colors.length],
     direction: directions[seed % directions.length],
-    food: foods[(seed * 3) % foods.length],
-    activity: activities[(seed * 5) % activities.length],
+    food: foods[seed % foods.length],
+    activity: activities[seed % activities.length],
   }
   
-  // 今日建议
   const advice = generateAdvice(overallRating, loveRating, careerRating, moneyRating, healthRating)
   
   return {
@@ -501,12 +579,6 @@ export default function HoroscopePage() {
   const [month, setMonth] = useState('')
   const [day, setDay] = useState('')
   const [result, setResult] = useState<any>(null)
-  const [today, setToday] = useState('')
-
-  useEffect(() => {
-    const now = new Date()
-    setToday(`${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日`)
-  }, [])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -518,7 +590,8 @@ export default function HoroscopePage() {
     }
     
     const sign = getZodiacSign(m, d)
-    const horoscope = generateHoroscope(sign.name, new Date())
+    // 传入用户生日（不是当天日期），确保同一用户结果一致
+    const horoscope = generateHoroscope(sign.name, m, d)
     
     setResult({ sign, horoscope, birthMonth: m, birthDay: d })
   }
@@ -546,14 +619,14 @@ export default function HoroscopePage() {
           <h1 className="text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-amber-400 to-amber-300 mb-4">
             星座运势
           </h1>
-          <p className="text-slate-400 text-lg">探索十二星座的每日运势指引 · {today}</p>
+          <p className="text-slate-400 text-lg">探索你的星座特质 · 你的专属幸运指引</p>
         </div>
 
         {/* 表单卡片 */}
         <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-amber-500/20 p-8 mb-8">
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label className="block text-amber-400 text-sm font-medium mb-2">选择出生日期</label>
+              <label className="block text-amber-400 text-sm font-medium mb-2">输入你的出生日期</label>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-slate-400 text-xs mb-1">月份</label>
@@ -582,13 +655,14 @@ export default function HoroscopePage() {
                   />
                 </div>
               </div>
+              <p className="text-slate-500 text-xs mt-2 text-center">同一用户每次查询结果一致 - 你的专属运势</p>
             </div>
 
             <button
               type="submit"
               className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-900 font-bold py-4 rounded-lg transition-all transform hover:scale-[1.02]"
             >
-              查看今日运势
+              查看我的专属运势
             </button>
           </form>
 
@@ -626,14 +700,14 @@ export default function HoroscopePage() {
               <div className="bg-gradient-to-r from-amber-500/10 to-amber-600/10 rounded-xl p-5 border border-amber-500/30">
                 <h4 className="text-amber-400 font-bold mb-2 flex items-center gap-2">
                   <span>💡</span>
-                  <span>今日建议</span>
+                  <span>专属建议</span>
                 </h4>
                 <p className="text-slate-300 leading-relaxed">{result.horoscope.advice}</p>
               </div>
 
               {/* 幸运信息 */}
               <div className="bg-gradient-to-r from-slate-900 to-slate-800 rounded-xl p-6 border border-amber-500/20">
-                <h4 className="text-amber-400 font-bold text-center mb-4">✨ 今日幸运</h4>
+                <h4 className="text-amber-400 font-bold text-center mb-4">✨ 你的专属幸运</h4>
                 <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-center">
                   <div>
                     <div className="text-slate-500 text-xs mb-1">幸运数字</div>
