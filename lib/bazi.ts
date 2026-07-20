@@ -308,8 +308,8 @@ export function calculateBazi(
   const yearGan = yearGanZhi[0]
   const yearZhi = yearGanZhi[1]
   
-  // 月柱
-  const monthGanZhi = getMonthGanZhi(yearGan, lunar.month)
+  // 月柱 - 使用 lunar-javascript 库直接获取（更准确，已考虑节气）
+  const monthGanZhi = lunar.ganZhiMonth
   const monthGan = monthGanZhi[0]
   const monthZhi = monthGanZhi[1]
   
