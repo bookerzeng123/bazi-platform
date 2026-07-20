@@ -57,20 +57,25 @@ export async function POST(request: NextRequest) {
     // 构建基础分析
     const basicAnalysis = buildBasicAnalysis(bazi)
 
-    // 尝试调用 AI 进行深度解读
+    // 尝试调用 AI 进行深度解读（带超时）
     let aiAnalysis = ''
     let aiProvider = ''
     let aiError = ''
     
     try {
       const prompt = buildAIPrompt(bazi, question, name)
-      const aiResult = await callAI(prompt)
+      // 设置 AI 调用超时为 10 秒
+      const aiPromise = callAI(prompt)
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('AI_TIMEOUT')), 10000)
+      )
+      const aiResult = await Promise.race([aiPromise, timeoutPromise]) as any
       aiAnalysis = aiResult.text
       aiProvider = aiResult.provider
     } catch (e: any) {
       console.error('AI 解读失败:', e)
-      aiError = e.message
-      // AI 失败时使用基础分析
+      aiError = e.message === 'AI_TIMEOUT' ? 'AI 响应超时' : e.message
+      // AI 失败时继续返回基础分析
     }
 
     return NextResponse.json({
@@ -85,7 +90,7 @@ export async function POST(request: NextRequest) {
   } catch (error: any) {
     console.error('排盘错误:', error)
     return NextResponse.json(
-      { error: '排盘失败：' + error.message },
+      { error: '排盘失败：' + (error.message || '未知错误') },
       { status: 500 }
     )
   }
