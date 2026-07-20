@@ -30,15 +30,20 @@ export function toLunar(year: number, month: number, day: number): LunarDate {
   const solar = Solar.fromYmd(year, month, day)
   const lunar = solar.getLunar()
   
+  // lunar-javascript 库：getMonth() 返回负数表示闰月（如 -4 = 闰四月）
+  const rawMonth = lunar.getMonth()
+  const isLeap = rawMonth < 0
+  const lunarMonth = Math.abs(rawMonth)
+  
   const ganZhiYear = lunar.getYearInGanZhi()
   const ganZhiMonth = lunar.getMonthInGanZhi()
   const ganZhiDay = lunar.getDayInGanZhi()
   
   return {
     year: lunar.getYear(),
-    month: lunar.getMonth(),
+    month: lunarMonth,
     day: lunar.getDay(),
-    isLeap: lunar.isLeap(),
+    isLeap,
     tianGan: ganZhiYear[0],
     diZhi: ganZhiYear[1],
     shengXiao: lunar.getYearShengXiao(),
