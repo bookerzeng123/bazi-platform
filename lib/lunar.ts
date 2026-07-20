@@ -30,15 +30,20 @@ export function toLunar(year: number, month: number, day: number): LunarDate {
   const solar = Solar.fromYmd(year, month, day)
   const lunar = solar.getLunar()
   
+  // lunar-javascript 库：getMonth() 返回负数表示闰月（如 -4 = 闰四月）
+  const rawMonth = lunar.getMonth()
+  const isLeap = rawMonth < 0
+  const lunarMonth = Math.abs(rawMonth)
+  
   const ganZhiYear = lunar.getYearInGanZhi()
   const ganZhiMonth = lunar.getMonthInGanZhi()
   const ganZhiDay = lunar.getDayInGanZhi()
   
   return {
     year: lunar.getYear(),
-    month: lunar.getMonth(),
+    month: lunarMonth,
     day: lunar.getDay(),
-    isLeap: lunar.getMonth() !== lunar.getMonth(),
+    isLeap,
     tianGan: ganZhiYear[0],
     diZhi: ganZhiYear[1],
     shengXiao: lunar.getYearShengXiao(),
@@ -54,16 +59,10 @@ export function toLunar(year: number, month: number, day: number): LunarDate {
  * 23:00-01:00为子时，01:00-03:00为丑时，以此类推
  */
 export function getHourGanZhi(dayGanZhi: string, hour: number): string {
-  const solar = Solar.fromYmd(2024, 1, 1)
-  const lunar = solar.getLunar()
-  
-  // 使用库计算时辰
   const timeZhi = Math.floor((hour + 1) / 2) % 12
   const zhi = DI_ZHI[timeZhi]
   
-  // 时干根据日干推算
   const dayGan = dayGanZhi[0]
-  const dayGanIdx = TIAN_GAN.indexOf(dayGan)
   
   // 甲己日起甲子时，乙庚日起丙子时，丙辛日起戊子时，丁壬日起庚子时，戊癸日起壬子时
   const startGanMap: Record<string, number> = {
@@ -81,27 +80,29 @@ export function getHourGanZhi(dayGanZhi: string, hour: number): string {
 }
 
 /**
- * 获取月干支
+ * 获取月干支 - 使用 lunar-javascript 库直接获取（已考虑节气）
  */
 export function getMonthGanZhi(yearGan: string, lunarMonth: number): string {
-  // 年干定月干：甲己之年丙作首，乙庚之岁戊为头...
+  // 使用五虎遁月诀：年干定月干
   const yearGanMap: Record<string, number> = {
-    '甲': 2, '己': 2,  // 丙
-    '乙': 4, '庚': 4,  // 戊
-    '丙': 6, '辛': 6,  // 庚
-    '丁': 8, '壬': 8,  // 壬
-    '戊': 0, '癸': 0,  // 甲
+    '甲': 2, '己': 2,  // 丙寅
+    '乙': 4, '庚': 4,  // 戊寅
+    '丙': 6, '辛': 6,  // 庚寅
+    '丁': 8, '壬': 8,  // 壬寅
+    '戊': 0, '癸': 0,  // 甲寅
   }
   
   const startGan = yearGanMap[yearGan]
+  // 正月建寅，lunarMonth=1 对应 寅(地支索引2)
   const gan = TIAN_GAN[(startGan + lunarMonth - 1) % 10]
+  // 地支：正月寅，二月卯，三月辰... lunarMonth-1+2 = lunarMonth+1
   const zhi = DI_ZHI[(lunarMonth + 1) % 12]
   
   return gan + zhi
 }
 
 /**
- * 获取日干支
+ * 获取日干支 - 使用 lunar-javascript 库
  */
 export function getDayGanZhi(year: number, month: number, day: number): string {
   const solar = Solar.fromYmd(year, month, day)
@@ -114,4 +115,33 @@ export function getDayGanZhi(year: number, month: number, day: number): string {
  */
 export function getHourBranchIndex(hour: number): number {
   return Math.floor((hour + 1) / 2) % 12
+}
+
+/**
+ * 验证排盘准确性 - 用于调试
+ */
+export function verifyBazi(year: number, month: number, day: number, hour: number): {
+  solar: string
+  lunar: string
+  yearPillar: string
+  monthPillar: string
+  dayPillar: string
+  hourPillar: string
+  shengXiao: string
+} {
+  const solar = Solar.fromYmd(year, month, day)
+  const lunar = solar.getLunar()
+  
+  const dayGanZhi = lunar.getDayInGanZhi()
+  const hourGanZhi = getHourGanZhi(dayGanZhi, hour)
+  
+  return {
+    solar: `${year}-${month}-${day}`,
+    lunar: `${lunar.getYear()}年${lunar.getMonth()}月${lunar.getDay()}日`,
+    yearPillar: lunar.getYearInGanZhi(),
+    monthPillar: lunar.getMonthInGanZhi(),
+    dayPillar: dayGanZhi,
+    hourPillar: hourGanZhi,
+    shengXiao: lunar.getYearShengXiao(),
+  }
 }
