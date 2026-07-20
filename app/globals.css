@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 /* ========================================
    命理大师 - 新中式设计风格
    参考：神巴巴、紫微府、麦玲玲
