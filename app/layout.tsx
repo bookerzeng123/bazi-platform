@@ -1,17 +1,22 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'Aether — The Quiet Art of Knowing',
-  description: 'A reading of the architecture of your fate, drawn from the Four Pillars, the geometry of Feng Shui, and the old hexagrams. Interpreted by masters. Illuminated by intelligence.',
-  keywords: 'Bazi, Four Pillars, Feng Shui, Horoscope, I Ching, Chinese astrology, destiny, divination, AI astrology',
+  title: 'Aether — Personal Insights Through Ancient Wisdom',
+  description: 'Personalized analysis based on classical Chinese wisdom — explore personality patterns, strengths, and life tendencies through the Four Pillars, environmental harmony, and philosophical reflection. For entertainment and self-discovery.',
+  keywords: 'birth chart analysis, four pillars, chinese philosophy, personality insights, self-reflection, cultural wisdom, life patterns',
   openGraph: {
-    title: 'Aether — The Quiet Art of Knowing',
-    description: 'Where the ancient masters meet modern intelligence. Bazi, Feng Shui, Horoscope, I Ching.',
+    title: 'Aether — Personal Insights Through Ancient Wisdom',
+    description: 'Personalized insights through classical Chinese cultural analysis. Entertainment and self-reflection.',
     type: 'website',
   },
+}
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
   themeColor: '#0a0a0f',
-  viewport: 'width=device-width, initial-scale=1, maximum-scale=5',
 }
 
 export default function RootLayout({
