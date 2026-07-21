@@ -1,6 +1,5 @@
 /**
- * Expert Bazi Reading Prompt (English)
- * For AI-powered deep analysis
+ * Optimized Bazi Reading Prompt — reduced ~30% tokens
  */
 
 export function buildExpertPrompt(baziData: {
@@ -12,44 +11,28 @@ export function buildExpertPrompt(baziData: {
   wuXingScores: Record<string, number>;
   daYun: Array<{ pillar: string; ageStart: number; ageEnd: number }>;
   liuNian: Array<{ pillar: string; year: number }>;
-  gender: string;
-  question?: string;
+  gender: string; question?: string;
 }): string {
-  const { yearPillar, monthPillar, dayPillar, hourPillar, zodiacAnimal, dayMaster, dayMasterElement, dayMasterStrength, tenGods, usefulGod, harmfulGod, wuXingScores, daYun, liuNian, gender, question } = baziData
+  const d = baziData
+  const g = d.gender === 'male' ? 'Yang' : 'Yin'
 
-  const genderLabel = gender === 'male' ? 'Yang' : 'Yin'
-  const wuXingDisplay = Object.entries(wuXingScores)
-    .map(([el, score]) => `${el}: ${score}分`)
-    .join(', ')
+  const chart = [
+    `Four Pillars: ${d.yearPillar} ${d.monthPillar} ${d.dayPillar} ${d.hourPillar}`,
+    `Day Master: ${d.dayMaster} (${d.dayMasterElement}, ${g}) · Year: ${d.zodiacAnimal}`,
+    `Strength: ${d.dayMasterStrength.level} (${d.dayMasterStrength.score}/10) · ${d.dayMasterStrength.reason}`,
+    `Ten Gods: ${Object.entries(d.tenGods).map(([k,v]) => `${k}:${v}`).join(' ')}`,
+    `Use/Harm: ${d.usefulGod} / ${d.harmfulGod} · Five: ${Object.entries(d.wuXingScores).map(([e,s]) => `${e}${s}`).join(' ')}`,
+    `Luck: ${d.daYun.map(p => `${p.pillar}(${p.ageStart}-${p.ageEnd})`).join('→')}`,
+    `Year: ${d.liuNian.slice(0,3).map(l => `${l.pillar}(${l.year})`).join('→')}`,
+    d.question ? `Q: "${d.question}"` : 'No question asked.'
+  ].join('\n')
 
-  const tenGodsDisplay = Object.entries(tenGods)
-    .map(([k, v]) => `${k}: ${v}`)
-    .join('; ')
+  return `You are a master of Bazi (Yuan Hai Zi Ping / Di Tian Sui / Qiong Tong Bao Jian). Respond only in English, 300-400 words.
 
-  return `You are a master of Bazi (the Four Pillars of Destiny), with forty years of practice rooted in the Yuan Hai Zi Ping, the Di Tian Sui, and the Qiong Tong Bao Jian. You speak with the authority of tradition and the precision of experience. Respond in English, with depth, warmth, and honesty.
+CHART:
+${chart}
 
-The subject's chart:
-- Year Pillar: ${yearPillar} (${zodiacAnimal} year)
-- Month Pillar: ${monthPillar}
-- Day Pillar: ${dayPillar} — Day Master: ${dayMaster} (${dayMasterElement} Element, ${genderLabel})
-- Hour Pillar: ${hourPillar}
-- Day Master Strength: ${dayMasterStrength.level} (score: ${dayMasterStrength.score}/10) — ${dayMasterStrength.reason}
-- Ten Gods: ${tenGodsDisplay}
-- Useful Element: ${usefulGod} | Harmful Element: ${harmfulGod}
-- Five Elements: ${wuXingDisplay}
-- Decade Luck: ${daYun.map(d => `${d.pillar} (age ${d.ageStart}-${d.ageEnd})`).join(' → ')}
-- Annual Influences: ${liuNian.map(l => `${l.pillar} (${l.year})`).join(' → ')}
+Write a personal reading covering: (1) Chart overview & Day Master nature (2) Dominant Ten Gods as personality (3) Useful/Harmful elements in daily life (4) Current decade luck & next 3 years (5) One closing truth.
 
-${question ? `The subject asks: "${question}"` : 'The subject has not asked a specific question — provide a comprehensive reading.'}
-
-Write a deep, personal reading (300-500 words) in English covering:
-1. An opening assessment of the overall chart — the nature of the Day Master and the story the Four Pillars tell together
-2. The Ten Gods as personality — what each dominant god reveals about character, motivation, and blind spots
-3. The Useful and Harmful elements — what nurturing the useful and managing the harmful looks like in daily life
-4. Current decade luck and the next 3 annual pillars — what themes are playing out, what to expect, what to avoid
-5. A closing thought — something the subject should carry with them; a truth that transcends the chart
-
-Use the classical texts sparingly but authoritatively. Speak to the person, not to the symbols. Be specific, not general. Be honest, not flattering. Remember: you are a master, and the master tells the truth with compassion.
-
-End with a short recommended action — one concrete thing to do in the next seven days that aligns with the chart's current cycle.`
+Be specific, honest, compassionate. End with one actionable step for the next 7 days.`
 }

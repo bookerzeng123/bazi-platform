@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
 
 // Five elements translation
@@ -141,12 +141,51 @@ export default function ConsultPage() {
   const [result, setResult] = useState<any>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [aiStatus, setAiStatus] = useState<'idle' | 'processing' | 'done' | 'error'>('idle')
+  const [aiElapsed, setAiElapsed] = useState(0)
+  const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  // Cleanup polling on unmount
+  useEffect(() => {
+    return () => { if (pollingRef.current) clearInterval(pollingRef.current) }
+  }, [])
+
+  const startPolling = (analysisId: string) => {
+    setAiStatus('processing')
+    setAiElapsed(0)
+
+    const elapsedTimer = setInterval(() => {
+      setAiElapsed(prev => prev + 1)
+    }, 1000)
+
+    pollingRef.current = setInterval(async () => {
+      try {
+        const res = await fetch(`/api/consult?analysisId=${analysisId}`)
+        if (!res.ok) throw new Error('Poll failed')
+        const data = await res.json()
+
+        if (data.aiStatus === 'done') {
+          clearInterval(pollingRef.current!)
+          clearInterval(elapsedTimer)
+          pollingRef.current = null
+          setAiStatus(data.aiAnalysis ? 'done' : 'error')
+          setResult((prev: any) => prev ? { ...prev, aiAnalysis: data.aiAnalysis, aiError: data.aiError } : prev)
+        } else if (data.aiStatus === 'error' || data.error) {
+          clearInterval(pollingRef.current!)
+          clearInterval(elapsedTimer)
+          pollingRef.current = null
+          setAiStatus('error')
+        }
+      } catch { /* retry next poll */ }
+    }, 5000)
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setError('')
     setResult(null)
+    setAiStatus('idle')
 
     const { year, month, day, hour, gender } = form
     if (!year || !month || !day || !hour) {
@@ -159,7 +198,7 @@ export default function ConsultPage() {
       const res = await fetch('/api/consult', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        signal: AbortSignal.timeout(90000),  // 90 seconds for frontend
+        signal: AbortSignal.timeout(30000),
         body: JSON.stringify({
           birthYear: parseInt(year),
           birthMonth: parseInt(month),
@@ -175,15 +214,19 @@ export default function ConsultPage() {
       }
 
       const data = await res.json()
-      console.log('[Frontend] API response:', { aiAnalysis: data.aiAnalysis?.substring(0, 50), aiError: data.aiError })
       setResult(data)
+      setLoading(false)
+
+      // Start polling for AI analysis
+      if (data.analysisId) {
+        startPolling(data.analysisId)
+      }
     } catch (err: any) {
       if (err.name === 'AbortError' || err.message?.includes('timeout')) {
         setError('Request timed out. Please try again.')
       } else {
         setError('The reading could not be completed. Please try again.')
       }
-    } finally {
       setLoading(false)
     }
   }
@@ -414,7 +457,7 @@ export default function ConsultPage() {
               )}
             </div>
 
-            {/* AI Reading - always show, even if empty */}
+            {/* AI Reading - async, with loading state */}
             <div className="bg-gradient-to-br from-amber-500/8 to-amber-600/5 backdrop-blur-sm rounded-2xl border border-amber-500/30 p-8">
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-8 h-8 rounded-full bg-amber-500/20 flex items-center justify-center text-amber-400 text-sm">✦</div>
@@ -423,15 +466,36 @@ export default function ConsultPage() {
                   <p className="text-amber-500/50 text-xs">From Aether's AI master reader</p>
                 </div>
               </div>
-              {result.aiAnalysis ? (
-                <div className="text-slate-400 text-sm leading-relaxed whitespace-pre-wrap">{result.aiAnalysis}</div>
-              ) : result.aiError ? (
-                <div className="text-slate-600 text-sm">
-                  <p className="italic mb-2">AI analysis temporarily unavailable.</p>
-                  <p className="text-xs text-slate-700">Error: {result.aiError}</p>
+
+              {aiStatus === 'processing' && (
+                <div className="text-center py-8">
+                  <div className="animate-spin text-3xl mb-4">☯</div>
+                  <p className="text-amber-400 font-medium mb-2">The master is contemplating your chart...</p>
+                  <p className="text-slate-600 text-sm">
+                    Deep analysis in progress · {aiElapsed < 60 ? `${aiElapsed}s` : `${Math.floor(aiElapsed/60)}m ${aiElapsed%60}s`} elapsed
+                  </p>
+                  <p className="text-slate-700 text-xs mt-2">This may take up to 60 seconds</p>
                 </div>
-              ) : (
-                <div className="text-slate-600 text-sm italic">AI analysis requires configuration. Contact support to enable this feature.</div>
+              )}
+
+              {aiStatus === 'done' && result.aiAnalysis && (
+                <div className="text-slate-400 text-sm leading-relaxed whitespace-pre-wrap">{result.aiAnalysis}</div>
+              )}
+
+              {aiStatus === 'error' && (
+                <div className="text-center py-6">
+                  <p className="text-slate-600 text-sm italic mb-3">The master's insight could not be retrieved at this time.</p>
+                  <button
+                    onClick={() => result.analysisId && startPolling(result.analysisId)}
+                    className="px-6 py-2 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 rounded-xl text-amber-400 text-sm transition-colors"
+                  >
+                    Retry Analysis
+                  </button>
+                </div>
+              )}
+
+              {aiStatus === 'idle' && !result.aiAnalysis && !result.aiError && (
+                <div className="text-slate-600 text-sm italic">AI analysis will begin shortly...</div>
               )}
             </div>
           </div>

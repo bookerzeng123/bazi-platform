@@ -3,13 +3,28 @@ import { calculateBazi } from '@/lib/bazi'
 import { buildExpertPrompt } from '@/lib/prompt'
 import { callAI } from '@/lib/api'
 
-function timeout<T>(promise: Promise<T>, ms: number): Promise<T> {
-  return Promise.race([
-    promise,
-    new Promise<T>((_, reject) => setTimeout(() => reject(new Error('timeout')), ms)),
-  ]) as Promise<T>
-}
+// ============================================================
+// In-memory async analysis store
+// Works within a single Railway Node.js instance
+// ============================================================
+const analysisStore = new Map<string, {
+  aiText: string | null
+  aiError: string | null
+  done: boolean
+  startedAt: number
+}>()
 
+// Cleanup stale entries older than 10 minutes
+setInterval(() => {
+  const now = Date.now()
+  for (const [id, entry] of analysisStore) {
+    if (now - entry.startedAt > 600_000) analysisStore.delete(id)
+  }
+}, 120_000)
+
+// ============================================================
+// POST /api/consult — returns bazi immediately, starts AI async
+// ============================================================
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
@@ -20,95 +35,29 @@ export async function POST(req: NextRequest) {
     }
 
     const gy = parseInt(birthYear), gm = parseInt(birthMonth), gd = parseInt(birthDay), gh = parseInt(birthHour)
-
     if (isNaN(gy) || isNaN(gm) || isNaN(gd) || isNaN(gh) ||
         gy < 1900 || gy > 2030 || gm < 1 || gm > 12 || gd < 1 || gd > 31 || gh < 0 || gh > 23) {
       return NextResponse.json({ error: 'Invalid birth data' }, { status: 400 })
     }
 
     const genderVal = gender === 'female' ? 'female' : 'male'
-
-    // Calculate the Four Pillars
     const bazi = calculateBazi(gy, gm, gd, gh, 0, genderVal)
 
-    // Map BaziResult to prompt format
     const yearPillar = `${bazi.yearPillar.gan}${bazi.yearPillar.zhi}`
     const monthPillar = `${bazi.monthPillar.gan}${bazi.monthPillar.zhi}`
     const dayPillar = `${bazi.dayPillar.gan}${bazi.dayPillar.zhi}`
     const hourPillar = `${bazi.hourPillar.gan}${bazi.hourPillar.zhi}`
-    const dayMaster = bazi.dayPillar.gan
     const zodiacAnimal = bazi.zodiac
-    const dayMasterElement = dayMaster in { '甲': 1, '乙': 1, '丙': 1, '丁': 1, '戊': 1 } ? 'Wood' :
+    const dayMaster = bazi.dayPillar.gan
+    const dayMasterElement =
+      ['甲','乙','丙','丁','戊'].includes(dayMaster) ? 'Wood' :
       dayMaster === '己' || dayMaster === '庚' ? 'Earth' :
-      dayMaster === '辛' ? 'Metal' :
-      dayMaster === '壬' || dayMaster === '癸' ? 'Water' : 'Unknown'
+      dayMaster === '辛' ? 'Metal' : 'Water'
 
-    // Build AI prompt
-    const prompt = buildExpertPrompt({
-      yearPillar,
-      monthPillar,
-      dayPillar,
-      hourPillar,
+    const baziResult = {
+      yearPillar, monthPillar, dayPillar, hourPillar,
       zodiacAnimal,
-      dayMaster,
-      dayMasterElement,
-      dayMasterStrength: {
-        level: bazi.dayMasterStrength.level,
-        score: bazi.dayMasterStrength.score,
-        reason: bazi.dayMasterStrength.explanation,
-      },
-      tenGods: {
-        year: bazi.tenGods.year,
-        month: bazi.tenGods.month,
-        day: bazi.tenGods.day,
-        hour: bazi.tenGods.hour,
-      },
-      usefulGod: bazi.usefulGod[0] || '',
-      harmfulGod: bazi.harmfulGod[0] || '',
-      wuXingScores: bazi.wuXingCount,
-      daYun: bazi.daYun.map(d => ({
-        pillar: d.ganZhi,
-        ageStart: d.startYear,
-        ageEnd: d.startYear + 9,
-      })),
-      liuNian: bazi.liuNian.map(l => ({
-        pillar: l.ganZhi,
-        year: l.year,
-      })),
-      gender: genderVal,
-      question: question || '',
-    })
-
-    // Try AI analysis
-    let aiText: string | null = null
-    let aiError: string | null = null
-
-    console.log('[AI Debug] SF_API_KEY exists:', !!process.env.SF_API_KEY)
-    console.log('[AI Debug] ZHIPU_API_KEY exists:', !!process.env.ZHIPU_API_KEY)
-
-    try {
-      const result = await timeout(callAI(prompt), 60000)  // 60 seconds timeout
-      aiText = result.text
-      console.log('[AI Debug] Success from:', result.provider)
-    } catch (err: any) {
-      console.error('[AI Debug] Error:', err.message)
-      if (err.message === 'NO_API_KEY' || err.message?.includes('401') || err.message?.includes('403')) {
-        aiError = 'NO_API_KEY'
-      } else if (err.message === 'timeout') {
-        aiError = 'TIMEOUT'
-      } else {
-        aiError = err.message || 'UNKNOWN_ERROR'
-      }
-    }
-
-    // Return full bazi result + AI
-    return NextResponse.json({
-      yearPillar,
-      monthPillar,
-      dayPillar,
-      hourPillar,
-      zodiacAnimal,
-      dayMaster,
+      dayMaster: dayMaster,
       dayMasterElement,
       dayMasterStrength: {
         level: bazi.dayMasterStrength.level,
@@ -125,21 +74,72 @@ export async function POST(req: NextRequest) {
         day: bazi.dayPillar.hiddenStems,
         hour: bazi.hourPillar.hiddenStems,
       },
-      daYun: bazi.daYun.map(d => ({
-        pillar: d.ganZhi,
-        ageStart: d.startYear,
-        ageEnd: d.startYear + 9,
-      })),
-      liuNian: bazi.liuNian.map(l => ({
-        pillar: l.ganZhi,
-        year: l.year,
-      })),
-      aiAnalysis: aiText,
-      aiError,
+      daYun: bazi.daYun.map(d => ({ pillar: d.ganZhi, ageStart: d.startYear, ageEnd: d.startYear + 9 })),
+      liuNian: bazi.liuNian.map(l => ({ pillar: l.ganZhi, year: l.year })),
+    }
+
+    // Generate a unique analysis ID
+    const analysisId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+
+    // Initialize store entry
+    analysisStore.set(analysisId, { aiText: null, aiError: null, done: false, startedAt: Date.now() })
+
+    // Fire AI call asynchronously (non-blocking)
+    const prompt = buildExpertPrompt({
+      ...baziResult,
+      dayMaster: dayMaster,
+      gender: genderVal,
+      question: question || '',
     })
+
+    callAI(prompt).then(result => {
+      const entry = analysisStore.get(analysisId)
+      if (entry) {
+        entry.aiText = result.text
+        entry.done = true
+      }
+    }).catch((err: any) => {
+      const entry = analysisStore.get(analysisId)
+      if (entry) {
+        entry.aiError = err.message?.includes('timeout') ? 'TIMEOUT' :
+          err.message?.includes('NO_API_KEY') ? 'NO_API_KEY' : err.message || 'UNKNOWN_ERROR'
+        entry.done = true
+      }
+    })
+
+    // Return bazi result immediately + analysisId for polling
+    return NextResponse.json({ ...baziResult, analysisId, aiStatus: 'processing' })
 
   } catch (err: any) {
     console.error('[consult API error]', err)
     return NextResponse.json({ error: err.message || 'Internal server error' }, { status: 500 })
   }
+}
+
+// ============================================================
+// GET /api/consult?analysisId=xxx — poll for AI result
+// ============================================================
+export async function GET(req: NextRequest) {
+  const analysisId = req.nextUrl.searchParams.get('analysisId')
+  if (!analysisId) {
+    return NextResponse.json({ error: 'Missing analysisId' }, { status: 400 })
+  }
+
+  const entry = analysisStore.get(analysisId)
+  if (!entry) {
+    return NextResponse.json({ error: 'Analysis not found' }, { status: 404 })
+  }
+
+  if (!entry.done) {
+    // Still processing
+    const elapsed = Math.floor((Date.now() - entry.startedAt) / 1000)
+    return NextResponse.json({ aiStatus: 'processing', elapsed })
+  }
+
+  // Done
+  return NextResponse.json({
+    aiStatus: 'done',
+    aiAnalysis: entry.aiText,
+    aiError: entry.aiError,
+  })
 }
