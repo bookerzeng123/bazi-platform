@@ -33,7 +33,7 @@ export async function callSiliconFlow(prompt: string, apiKey?: string): Promise<
         },
       ],
       temperature: 0.7,
-      max_tokens: 2048,
+      max_tokens: 4096,
     }),
   })
 
@@ -63,7 +63,7 @@ export async function callZhipu(prompt: string, apiKey?: string): Promise<string
         { role: 'user', content: prompt },
       ],
       temperature: 0.7,
-      max_tokens: 2048,
+      max_tokens: 4096,
     }),
   })
 

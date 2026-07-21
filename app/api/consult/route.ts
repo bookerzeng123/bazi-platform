@@ -95,7 +95,9 @@ export async function POST(req: NextRequest) {
     callAI(prompt).then(result => {
       const entry = analysisStore.get(analysisId)
       if (entry) {
-        entry.aiText = result.text
+        // Strip <thinking>...</thinking> blocks so the user only sees the polished reading
+        const cleaned = result.text.replace(/<thinking>[\s\S]*?<\/thinking>/gi, '').trim()
+        entry.aiText = cleaned
         entry.done = true
       }
     }).catch((err: any) => {
