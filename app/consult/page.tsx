@@ -413,48 +413,21 @@ export default function ConsultPage() {
               )}
             </div>
 
-            {/* AI Reading */}
-            {result.aiAnalysis && (
-              <div className="bg-gradient-to-br from-amber-500/8 to-amber-600/5 backdrop-blur-sm rounded-2xl border border-amber-500/30 p-8">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-8 h-8 rounded-full bg-amber-500/20 flex items-center justify-center text-amber-400 text-sm">✦</div>
-                  <div>
-                    <h3 className="text-amber-300 font-bold">Deep Analysis</h3>
-                    <p className="text-amber-500/50 text-xs">From Aether's AI master reader</p>
-                  </div>
+            {/* AI Reading - always show, even if empty */}
+            <div className="bg-gradient-to-br from-amber-500/8 to-amber-600/5 backdrop-blur-sm rounded-2xl border border-amber-500/30 p-8">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-8 h-8 rounded-full bg-amber-500/20 flex items-center justify-center text-amber-400 text-sm">✦</div>
+                <div>
+                  <h3 className="text-amber-300 font-bold">Deep Analysis</h3>
+                  <p className="text-amber-500/50 text-xs">From Aether's AI master reader</p>
                 </div>
+              </div>
+              {result.aiAnalysis ? (
                 <div className="text-slate-400 text-sm leading-relaxed whitespace-pre-wrap">{result.aiAnalysis}</div>
-              </div>
-            )}
-
-            {result.aiError === 'NO_API_KEY' && (
-              <div className="bg-[#0d1117]/80 backdrop-blur-sm rounded-2xl border border-slate-800 p-8">
-                <div className="text-center mb-5">
-                  <div className="text-4xl mb-3">🔮</div>
-                  <h3 className="text-slate-200 font-bold text-lg mb-2">Receive the Full Reading</h3>
-                  <p className="text-slate-500 text-sm max-w-sm mx-auto">A forty-year master, augmented by AI intelligence — for an analysis that goes beyond the chart into the story behind it.</p>
-                </div>
-                <div className="bg-[#0a0a0f]/60 rounded-xl p-5 mb-5 border border-slate-800">
-                  <div className="space-y-2.5 text-sm">
-                    {['Complete personality and destiny analysis', 'Career, wealth and relationship guidance', 'Optimal timing for major decisions', 'Personalized feng shui recommendations', 'Deep AI-powered insight report'].map((f) => (
-                      <div key={f} className="flex items-center gap-2.5">
-                        <span className="text-amber-400">✓</span>
-                        <span className="text-slate-400">{f}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                <a
-                  href="https://paypal.me/YourPayPalLink"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-400 hover:to-blue-500 text-white font-bold py-4 rounded-xl text-center transition-all shadow-lg shadow-blue-500/20"
-                >
-                  Unlock Full Reading · $5.99
-                </a>
-                <p className="text-slate-700 text-xs text-center mt-3">Secured by PayPal · Instant access · No subscription</p>
-              </div>
-            )}
+              ) : (
+                <div className="text-slate-600 text-sm italic">AI analysis requires configuration. Contact support to enable this feature.</div>
+              )}
+            </div>
           </div>
         )}
 

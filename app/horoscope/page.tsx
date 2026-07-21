@@ -3,6 +3,32 @@
 import { useState } from 'react'
 import Link from 'next/link'
 
+// Map color names to hex codes for dynamic font color
+function getColorCode(colorName: string): string {
+  const colorMap: Record<string, string> = {
+    'Red': '#E53935',
+    'Orange': '#FB8C00',
+    'Gold': '#FFD700',
+    'Yellow': '#FDD835',
+    'Green': '#43A047',
+    'Dark Green': '#2E7D32',
+    'Blue': '#1E88E5',
+    'Deep Blue': '#1565C0',
+    'Light Blue': '#64B5F6',
+    'Pale Blue': '#B3E5FC',
+    'Purple': '#8E24AA',
+    'Deep Red': '#C62828',
+    'Pink': '#EC407A',
+    'White': '#FFFFFF',
+    'Black': '#212121',
+    'Silver': '#B0BEC5',
+    'Gray': '#757575',
+    'Brown': '#795548',
+    'Beige': '#D7CCC8',
+  }
+  return colorMap[colorName] || '#D4AF37' // fallback to gold
+}
+
 const ZODIAC_SIGNS = [
   { name: 'Capricorn', icon: '♑', element: 'Earth', traits: 'Ambitious · Disciplined · Patient', startMonth: 12, startDay: 22, endMonth: 1, endDay: 19, planet: 'Saturn', dates: 'Dec 22 – Jan 19' },
   { name: 'Aquarius', icon: '♒', element: 'Air', traits: 'Independent · Innovative · Humanitarian', startMonth: 1, startDay: 20, endMonth: 2, endDay: 18, planet: 'Uranus', dates: 'Jan 20 – Feb 18' },
@@ -616,14 +642,17 @@ export default function HoroscopePage() {
                 <div className="grid grid-cols-2 md:grid-cols-5 gap-5 text-center">
                   {[
                     { label: 'Number', value: result.horoscope.lucky.number },
-                    { label: 'Color', value: result.horoscope.lucky.color },
+                    { label: 'Color', value: result.horoscope.lucky.color, isColor: true },
                     { label: 'Direction', value: result.horoscope.lucky.direction },
                     { label: 'Food', value: result.horoscope.lucky.food },
                     { label: 'Activity', value: result.horoscope.lucky.activity },
                   ].map((l) => (
                     <div key={l.label}>
                       <div className="text-slate-600 text-xs mb-1.5 uppercase tracking-wider">{l.label}</div>
-                      <div className="text-lg font-bold text-amber-400">{l.value}</div>
+                      <div 
+                        className="text-lg font-bold"
+                        style={l.isColor ? { color: getColorCode(l.value) } : undefined}
+                      >{l.value}</div>
                     </div>
                   ))}
                 </div>

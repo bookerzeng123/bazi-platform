@@ -1,149 +1,170 @@
+'use client'
+
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 
-export default function Home() {
+// Kasamba-inspired premium psychic reading platform
+// Clean, mystical, trust-focused design
+
+const SERVICES = [
+  { id: 'bazi', name: 'Four Pillars', icon: '☯', price: '$5.99', desc: 'The precise cosmic architecture written at your birth — decoded through stems, branches, and the cycles of ten thousand days.', badge: 'Most Sought', link: '/consult' },
+  { id: 'compass', name: 'Feng Shui Compass', icon: '🧭', price: 'Free', desc: 'Twenty-four mountains, nine flying palaces, the breath of chi — align your space with cosmic currents.', badge: 'New', link: '/compass' },
+  { id: 'horoscope', name: 'Stellar Forecast', icon: '✦', price: 'Free', desc: 'Daily celestial weather for your sign — love, career, wealth, and health, calibrated to the heavens.', badge: null, link: '/horoscope' },
+  { id: 'divination', name: 'I Ching Oracle', icon: '🔮', price: '$3.99', desc: 'Cast the coins. Sixty-four hexagrams distilled from three thousand years of wisdom — the Oracle responds.', badge: null, link: '/divination' },
+]
+
+const TRUST_POINTS = [
+  { icon: '📜', title: 'Lineage of Masters', desc: 'Rooted in Yuan Hai Zi Ping, Di Tian Sui, Qiong Tong Bao Jian — three thousand years of distilled wisdom.' },
+  { icon: '⚙️', title: 'Precision by Design', desc: 'Lunar algorithms refined by practitioners, validated against a century of records.' },
+  { icon: '🤖', title: 'Intelligence, Augmented', desc: 'Forty years of master insight, absorbed into Qwen 72B — depth no single reader can match.' },
+  { icon: '🔒', title: 'Your Secrets, Sacred', desc: 'End-to-end encryption. Your birth data never leaves our protected environment.' },
+  { icon: '⚡', title: 'Always at Hand', desc: 'A complete reading in seconds, not weeks. The wisdom of the ancients at modern speed.' },
+  { icon: '💰', title: 'Honest Exchange', desc: 'Transparent rates. PayPal secured. No subscriptions, no hidden additions.' },
+]
+
+export default function HomePage() {
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#0a0a0f] via-[#0d1117] to-[#0a0a0f]">
-      {/* Navigation */}
-      <nav className="bg-[#0a0a0f]/80 backdrop-blur-md border-b border-amber-500/20 sticky top-0 z-50">
-        <div className="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
-          <Link href="/" className="flex items-center gap-3 group">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-300 via-amber-400 to-amber-600 flex items-center justify-center text-[#0a0a0f] font-bold text-lg shadow-lg shadow-amber-500/20 group-hover:shadow-amber-500/40 transition-all">
-              Æ
-            </div>
-            <span className="text-amber-300 font-bold text-xl tracking-[0.2em] uppercase">Aether</span>
+    <div className="min-h-screen bg-gradient-to-b from-[#0a0a1a] via-[#0f0f2a] to-[#1a1a3a] text-white">
+      {/* Header */}
+      <header className="sticky top-0 z-50 backdrop-blur-lg border-b border-white/5 bg-black/40">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-3">
+            <div className="text-2xl font-light tracking-widest text-amber-400">Æ</div>
+            <span className="text-lg font-semibold tracking-wider">AETHER</span>
           </Link>
-          <div className="hidden md:flex items-center gap-10">
-            <Link href="/" className="text-amber-300 font-medium tracking-wide">Home</Link>
-            <Link href="/consult" className="text-slate-400 hover:text-amber-300 transition-colors tracking-wide">Four Pillars</Link>
-            <Link href="/compass" className="text-slate-400 hover:text-amber-300 transition-colors tracking-wide">Compass</Link>
-            <Link href="/horoscope" className="text-slate-400 hover:text-amber-300 transition-colors tracking-wide">Stars</Link>
-            <Link href="/divination" className="text-slate-400 hover:text-amber-300 transition-colors tracking-wide">Oracle</Link>
-          </div>
-          <Link href="/consult" className="bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-[#0a0a0f] font-bold px-6 py-2.5 rounded-full transition-all text-sm tracking-wide shadow-lg shadow-amber-500/20 hover:shadow-amber-500/40">
-            Begin Reading
+          <nav className="hidden md:flex items-center gap-8">
+            {SERVICES.map((s) => (
+              <Link key={s.id} href={s.link} className="text-sm text-white/70 hover:text-amber-400 transition-colors">
+                {s.name}
+              </Link>
+            ))}
+          </nav>
+          <Link href="/consult" className="bg-amber-500 hover:bg-amber-400 text-black font-semibold px-6 py-2 rounded-full text-sm transition-colors">
+            Get a Reading
           </Link>
         </div>
-      </nav>
+      </header>
 
-      {/* Hero */}
-      <section className="relative overflow-hidden py-28 md:py-40">
+      {/* Hero Section - Kasamba inspired */}
+      <section className="relative overflow-hidden">
+        {/* Background glow effects */}
         <div className="absolute inset-0">
-          <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-amber-500/5 rounded-full blur-[120px] animate-pulse"/>
-          <div className="absolute bottom-1/3 right-1/4 w-[400px] h-[400px] bg-amber-600/5 rounded-full blur-[100px] animate-pulse" style={{ animationDelay: '1.5s' }}/>
-          <div className="absolute top-1/2 right-1/3 w-[300px] h-[300px] bg-amber-400/3 rounded-full blur-[80px] animate-pulse" style={{ animationDelay: '3s' }}/>
-          <div className="absolute bottom-10 left-10 text-amber-500/5 text-[200px] leading-none select-none font-serif">☰</div>
-          <div className="absolute top-16 right-16 text-amber-500/5 text-[160px] leading-none select-none font-serif">☷</div>
+          <div className="absolute top-20 left-1/4 w-96 h-96 bg-purple-600/20 rounded-full blur-3xl" />
+          <div className="absolute top-40 right-1/4 w-80 h-80 bg-amber-500/20 rounded-full blur-3xl" />
+          <div className="absolute bottom-20 left-1/2 w-72 h-72 bg-blue-600/10 rounded-full blur-3xl" />
         </div>
 
-        <div className="relative max-w-4xl mx-auto px-6 text-center">
-          <div className="inline-flex items-center gap-3 bg-amber-500/8 border border-amber-500/25 rounded-full px-5 py-2 mb-10">
-            <span className="text-amber-400/80 text-xs tracking-[0.25em] uppercase">Ancient Wisdom · Modern Intelligence</span>
+        <div className="relative max-w-7xl mx-auto px-6 py-20 md:py-32 text-center">
+          {/* Badge */}
+          <div className="inline-flex items-center gap-2 bg-white/5 backdrop-blur-sm border border-white/10 rounded-full px-4 py-1.5 mb-8">
+            <span className="text-amber-400 text-xs">✦</span>
+            <span className="text-white/80 text-sm">Trusted by 500K+ souls worldwide</span>
           </div>
 
-          <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold mb-8 leading-[1.05] tracking-tight">
-            <span className="text-transparent bg-clip-text bg-gradient-to-b from-amber-200 via-amber-300 to-amber-400">The Quiet Art</span>
-            <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-b from-slate-300 via-slate-400 to-slate-500 text-4xl md:text-5xl lg:text-6xl">of Knowing</span>
+          {/* Main headline */}
+          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold leading-tight mb-6">
+            <span className="text-white">Psychic Chat, Tarot,</span><br />
+            <span className="text-amber-400">Astrology & More</span>
           </h1>
 
-          <p className="text-slate-500 text-lg md:text-xl max-w-2xl mx-auto mb-12 leading-relaxed font-light">
-            A reading of the architecture of your fate — drawn from the Four Pillars, the geometry of Feng Shui, and the old hexagrams. Not fate as it is told. Fate as it is understood.
+          {/* Subheadline */}
+          <p className="text-xl md:text-2xl text-white/60 mb-4">
+            Find your way to love and happiness
           </p>
 
-          <div className="flex justify-center gap-14 mb-14">
-            {[
-              { n: '500K+', l: 'Souls Illuminated' },
-              { n: '98%', l: 'Chart Precision' },
-              { n: '4.9 ★', l: 'Across All Readings' },
-            ].map((s) => (
-              <div key={s.l} className="text-center">
-                <div className="text-2xl md:text-3xl font-bold text-amber-400">{s.n}</div>
-                <div className="text-slate-600 text-xs mt-1 tracking-widest uppercase">{s.l}</div>
+          {/* CTA buttons */}
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mt-12">
+            <Link href="/consult" className="bg-amber-500 hover:bg-amber-400 text-black font-bold px-8 py-4 rounded-full text-lg transition-all shadow-lg shadow-amber-500/30">
+              Get Your Reading →
+            </Link>
+            <Link href="/horoscope" className="bg-white/5 hover:bg-white/10 border border-white/20 text-white font-semibold px-8 py-4 rounded-full text-lg transition-all">
+              Free Daily Horoscope
+            </Link>
+          </div>
+
+          {/* Stats */}
+          <div className="grid grid-cols-3 gap-8 max-w-3xl mx-auto mt-16 pt-16 border-t border-white/10">
+            <div>
+              <div className="text-3xl md:text-4xl font-bold text-amber-400">500K+</div>
+              <div className="text-white/50 text-sm mt-1">Readings Delivered</div>
+            </div>
+            <div>
+              <div className="text-3xl md:text-4xl font-bold text-amber-400">98%</div>
+              <div className="text-white/50 text-sm mt-1">Chart Precision</div>
+            </div>
+            <div>
+              <div className="text-3xl md:text-4xl font-bold text-amber-400">4.9★</div>
+              <div className="text-white/50 text-sm mt-1">User Rating</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Services Grid - Kasamba style */}
+      <section className="max-w-7xl mx-auto px-6 py-20">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Choose Your Reading</h2>
+          <p className="text-white/60 max-w-2xl mx-auto">Expert guidance in Chinese metaphysics, tailored to your needs</p>
+        </div>
+
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {SERVICES.map((service) => (
+            <Link
+              key={service.id}
+              href={service.link}
+              className="group relative bg-gradient-to-br from-white/5 to-white/0 backdrop-blur-sm border border-white/10 rounded-2xl p-6 hover:border-amber-500/50 transition-all hover:shadow-xl hover:shadow-amber-500/10"
+            >
+              {service.badge && (
+                <div className="absolute top-4 right-4 bg-amber-500/20 text-amber-400 text-xs font-semibold px-3 py-1 rounded-full">
+                  {service.badge}
+                </div>
+              )}
+              <div className="text-4xl mb-4">{service.icon}</div>
+              <h3 className="text-xl font-bold text-white mb-2 group-hover:text-amber-400 transition-colors">{service.name}</h3>
+              <p className="text-white/50 text-sm mb-4 leading-relaxed">{service.desc}</p>
+              <div className="flex items-center justify-between">
+                <span className="text-amber-400 font-bold">{service.price}</span>
+                <span className="text-white/30 group-hover:text-amber-400 transition-colors">→</span>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      {/* Trust Section - Kasamba "Why Kasamba" style */}
+      <section className="bg-black/20 border-y border-white/5 py-20">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Why Choose Aether?</h2>
+            <p className="text-white/60">Your journey to clarity starts with trusted guidance</p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            {TRUST_POINTS.slice(0, 3).map((point, i) => (
+              <div key={i} className="text-center">
+                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-white/5 flex items-center justify-center text-3xl border border-white/10">
+                  {point.icon}
+                </div>
+                <h3 className="text-xl font-bold text-white mb-2">{point.title}</h3>
+                <p className="text-white/50 text-sm leading-relaxed">{point.desc}</p>
               </div>
             ))}
           </div>
 
-          <Link href="/consult" className="inline-flex items-center gap-3 bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 hover:from-amber-300 hover:via-amber-400 hover:to-amber-500 text-[#0a0a0f] font-bold text-base px-12 py-4 rounded-full transition-all shadow-xl shadow-amber-500/20 hover:shadow-amber-500/40 hover:scale-[1.03] tracking-wide">
-            Reveal My Four Pillars
-            <span className="text-xl">→</span>
-          </Link>
-        </div>
-      </section>
-
-      {/* Divider */}
-      <div className="max-w-xs mx-auto h-px bg-gradient-to-r from-transparent via-amber-500/30 to-transparent"/>
-
-      {/* Services */}
-      <section className="max-w-6xl mx-auto px-6 py-24">
-        <div className="text-center mb-16">
-          <p className="text-amber-500/60 text-xs tracking-[0.3em] uppercase mb-4">Services</p>
-          <h2 className="text-3xl md:text-4xl font-bold text-slate-200">Four paths to clarity</h2>
-        </div>
-
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-5">
-          <Link href="/consult" className="group bg-[#0d1117]/80 backdrop-blur-sm rounded-2xl border border-slate-800 hover:border-amber-500/40 p-7 transition-all duration-300 hover:shadow-xl hover:shadow-amber-500/10 hover:-translate-y-1">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-300/20 to-amber-500/20 border border-amber-500/30 flex items-center justify-center text-xl mb-5 group-hover:scale-110 transition-transform">☯</div>
-            <h3 className="text-lg font-bold text-slate-200 mb-2 tracking-wide">Four Pillars</h3>
-            <p className="text-slate-500 text-sm leading-relaxed mb-4">The precise cosmic architecture written at your birth — decoded through stems, branches, and the cycles of ten thousand days.</p>
-            <div className="flex items-center justify-between">
-              <span className="text-amber-400 font-semibold text-sm">$5.99</span>
-              <span className="text-red-400/70 text-xs px-2 py-0.5 rounded-full border border-red-400/30 bg-red-400/10">Most Sought</span>
-            </div>
-          </Link>
-
-          <Link href="/compass" className="group bg-[#0d1117]/80 backdrop-blur-sm rounded-2xl border border-slate-800 hover:border-amber-500/40 p-7 transition-all duration-300 hover:shadow-xl hover:shadow-amber-500/10 hover:-translate-y-1">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-400/20 to-green-500/20 border border-green-500/30 flex items-center justify-center text-xl mb-5 group-hover:scale-110 transition-transform">🧭</div>
-            <h3 className="text-lg font-bold text-slate-200 mb-2 tracking-wide">Celestial Compass</h3>
-            <p className="text-slate-500 text-sm leading-relaxed mb-4">Twenty-four mountains, nine flying palaces, the breath of chi — align your space with cosmic currents.</p>
-            <div className="flex items-center justify-between">
-              <span className="text-green-400 font-semibold text-sm">Free</span>
-              <span className="text-green-400/70 text-xs px-2 py-0.5 rounded-full border border-green-400/30 bg-green-400/10">New</span>
-            </div>
-          </Link>
-
-          <Link href="/horoscope" className="group bg-[#0d1117]/80 backdrop-blur-sm rounded-2xl border border-slate-800 hover:border-amber-500/40 p-7 transition-all duration-300 hover:shadow-xl hover:shadow-amber-500/10 hover:-translate-y-1">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-400/20 to-purple-500/20 border border-purple-500/30 flex items-center justify-center text-xl mb-5 group-hover:scale-110 transition-transform">✦</div>
-            <h3 className="text-lg font-bold text-slate-200 mb-2 tracking-wide">Stellar Forecast</h3>
-            <p className="text-slate-500 text-sm leading-relaxed mb-4">Daily celestial weather for your sign — love, career, wealth, and health, calibrated to the heavens.</p>
-            <div className="flex items-center justify-between">
-              <span className="text-green-400 font-semibold text-sm">Free</span>
-            </div>
-          </Link>
-
-          <Link href="/divination" className="group bg-[#0d1117]/80 backdrop-blur-sm rounded-2xl border border-slate-800 hover:border-amber-500/40 p-7 transition-all duration-300 hover:shadow-xl hover:shadow-amber-500/10 hover:-translate-y-1">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-400/20 to-indigo-500/20 border border-indigo-500/30 flex items-center justify-center text-xl mb-5 group-hover:scale-110 transition-transform">🔮</div>
-            <h3 className="text-lg font-bold text-slate-200 mb-2 tracking-wide">The Oracle</h3>
-            <p className="text-slate-500 text-sm leading-relaxed mb-4">Cast the coins. Sixty-four hexagrams distilled from three thousand years of wisdom — the I Ching responds.</p>
-            <div className="flex items-center justify-between">
-              <span className="text-amber-400 font-semibold text-sm">$3.99</span>
-            </div>
-          </Link>
-        </div>
-      </section>
-
-      {/* Why Us */}
-      <section className="bg-[#0d1117]/50 border-y border-slate-800/50 py-24">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="text-center mb-16">
-            <p className="text-amber-500/60 text-xs tracking-[0.3em] uppercase mb-4">The Difference</p>
-            <h2 className="text-3xl md:text-4xl font-bold text-slate-200">Why the masters choose Aether</h2>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {[
-              { icon: '📜', title: 'Lineage of Masters', desc: 'Rooted in the Yuan Hai Zi Ping, the Di Tian Sui, the Qiong Tong Bao Jian — three thousand years of wisdom, distilled into every reading.' },
-              { icon: '⚙️', title: 'Precision by Design', desc: 'Our lunar algorithms draw from the lunar-javascript library, refined by practicing masters and validated against a century of records.' },
-              { icon: '🤖', title: 'Intelligence, Augmented', desc: 'Forty years of a master practitioner, absorbed into the pattern recognition of Qwen 72B — depth no single reader can match.' },
-              { icon: '🔒', title: 'Your Secrets, Sacred', desc: 'End-to-end encryption. Your birth data never leaves our protected environment. Not sold, not shared, not remembered.' },
-              { icon: '⚡', title: 'Always at Hand', desc: 'A complete reading in seconds, not weeks. The wisdom of the ancients; the speed of today.' },
-              { icon: '💰', title: 'Honest Exchange', desc: 'Transparent rates. PayPal secured. No subscriptions, no hidden additions, no pressure. Pay only for what you need.' },
-            ].map((item) => (
-              <div key={item.title} className="flex gap-4 bg-[#0a0a0f]/50 rounded-xl p-5 border border-slate-800/60 hover:border-amber-500/20 transition-colors">
-                <div className="text-2xl flex-shrink-0 mt-0.5">{item.icon}</div>
-                <div>
-                  <h3 className="text-slate-200 font-semibold mb-1 tracking-wide">{item.title}</h3>
-                  <p className="text-slate-500 text-sm leading-relaxed">{item.desc}</p>
+          <div className="grid md:grid-cols-3 gap-8 mt-12">
+            {TRUST_POINTS.slice(3, 6).map((point, i) => (
+              <div key={i} className="text-center">
+                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-white/5 flex items-center justify-center text-3xl border border-white/10">
+                  {point.icon}
                 </div>
+                <h3 className="text-xl font-bold text-white mb-2">{point.title}</h3>
+                <p className="text-white/50 text-sm leading-relaxed">{point.desc}</p>
               </div>
             ))}
           </div>
@@ -151,57 +172,67 @@ export default function Home() {
       </section>
 
       {/* CTA Banner */}
-      <section className="py-24 text-center">
-        <div className="max-w-2xl mx-auto px-6">
-          <h2 className="text-2xl md:text-3xl font-bold text-slate-200 mb-4">The stars are already written.</h2>
-          <p className="text-slate-500 mb-8 text-lg">It is only a question of learning to read them.</p>
-          <Link href="/consult" className="inline-flex items-center gap-3 border border-amber-500/50 text-amber-300 hover:bg-amber-500/10 font-semibold px-10 py-4 rounded-full transition-all tracking-wide">
-            Begin the Reading
-            <span className="text-amber-400">→</span>
-          </Link>
+      <section className="max-w-7xl mx-auto px-6 py-20">
+        <div className="relative bg-gradient-to-r from-purple-600/20 via-amber-500/20 to-purple-600/20 rounded-3xl p-12 text-center border border-white/10 overflow-hidden">
+          <div className="absolute inset-0 bg-[url('/stars.png')] opacity-10" />
+          <div className="relative">
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+              The stars are already written.
+            </h2>
+            <p className="text-xl text-white/60 mb-8">
+              It is only a question of learning to read them.
+            </p>
+            <Link href="/consult" className="inline-block bg-amber-500 hover:bg-amber-400 text-black font-bold px-10 py-4 rounded-full text-lg transition-all shadow-lg shadow-amber-500/30">
+              Begin Your Reading →
+            </Link>
+          </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-slate-800/60 bg-[#0a0a0f] py-16">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="grid md:grid-cols-4 gap-10 mb-12">
+      <footer className="border-t border-white/5 bg-black/40 py-12">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="grid md:grid-cols-4 gap-8 mb-12">
             <div>
-              <div className="flex items-center gap-3 mb-5">
-                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center text-[#0a0a0f] font-bold text-sm">Æ</div>
-                <span className="text-amber-300 font-bold text-lg tracking-[0.2em] uppercase">Aether</span>
+              <div className="flex items-center gap-2 mb-4">
+                <span className="text-2xl font-light text-amber-400">Æ</span>
+                <span className="font-semibold">AETHER</span>
               </div>
-              <p className="text-slate-600 text-sm leading-relaxed">The quiet art of knowing. Ancient wisdom, refined by modern intelligence — for those who seek depth, not fortune-tellers.</p>
+              <p className="text-white/40 text-sm leading-relaxed">
+                Ancient wisdom meets modern intelligence. Your path to clarity begins here.
+              </p>
             </div>
             <div>
-              <h4 className="text-slate-400 font-semibold mb-4 text-sm tracking-wider uppercase">Readings</h4>
-              <ul className="space-y-2.5">
-                <li><Link href="/consult" className="text-slate-600 hover:text-amber-400 transition-colors text-sm">Four Pillars</Link></li>
-                <li><Link href="/compass" className="text-slate-600 hover:text-amber-400 transition-colors text-sm">Celestial Compass</Link></li>
-                <li><Link href="/horoscope" className="text-slate-600 hover:text-amber-400 transition-colors text-sm">Stellar Forecast</Link></li>
-                <li><Link href="/divination" className="text-slate-600 hover:text-amber-400 transition-colors text-sm">The Oracle</Link></li>
-              </ul>
+              <h4 className="font-semibold mb-4">Readings</h4>
+              <div className="space-y-2">
+                {SERVICES.map((s) => (
+                  <Link key={s.id} href={s.link} className="block text-white/50 hover:text-amber-400 text-sm transition-colors">
+                    {s.name}
+                  </Link>
+                ))}
+              </div>
             </div>
             <div>
-              <h4 className="text-slate-400 font-semibold mb-4 text-sm tracking-wider uppercase">Company</h4>
-              <ul className="space-y-2.5">
-                <li><Link href="#" className="text-slate-600 hover:text-amber-400 transition-colors text-sm">About Aether</Link></li>
-                <li><Link href="#" className="text-slate-600 hover:text-amber-400 transition-colors text-sm">Terms of Service</Link></li>
-                <li><Link href="#" className="text-slate-600 hover:text-amber-400 transition-colors text-sm">Privacy Policy</Link></li>
-                <li><Link href="#" className="text-slate-600 hover:text-amber-400 transition-colors text-sm">Refund Policy</Link></li>
-              </ul>
+              <h4 className="font-semibold mb-4">Company</h4>
+              <div className="space-y-2">
+                <Link href="/about" className="block text-white/50 hover:text-amber-400 text-sm transition-colors">About</Link>
+                <Link href="/privacy" className="block text-white/50 hover:text-amber-400 text-sm transition-colors">Privacy Policy</Link>
+                <Link href="/terms" className="block text-white/50 hover:text-amber-400 text-sm transition-colors">Terms of Service</Link>
+              </div>
             </div>
             <div>
-              <h4 className="text-slate-400 font-semibold mb-4 text-sm tracking-wider uppercase">Connect</h4>
-              <ul className="space-y-2.5">
-                <li className="text-slate-600 text-sm">Telegram: @AetherReadings</li>
-                <li className="text-slate-600 text-sm">Email: hello@aether.insights</li>
-                <li className="text-slate-600 text-sm">WeChat: AetherOfficial</li>
-              </ul>
+              <h4 className="font-semibold mb-4">Connect</h4>
+              <div className="space-y-2 text-sm text-white/50">
+                <div>Telegram: @AetherReadings</div>
+                <div>Email: hello@aether.insights</div>
+                <div>WeChat: AetherOfficial</div>
+              </div>
             </div>
           </div>
-          <div className="border-t border-slate-800/60 pt-8 text-center">
-            <p className="text-slate-700 text-sm">© 2026 Aether Insights. The stars were here long before us. They will remain long after.</p>
+          <div className="border-t border-white/5 pt-8 text-center">
+            <p className="text-white/30 text-sm">
+              © 2026 Aether Insights. The stars were here long before us. They will remain long after.
+            </p>
           </div>
         </div>
       </footer>
