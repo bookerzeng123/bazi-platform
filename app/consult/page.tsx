@@ -175,6 +175,7 @@ export default function ConsultPage() {
       }
 
       const data = await res.json()
+      console.log('[Frontend] API response:', { aiAnalysis: data.aiAnalysis?.substring(0, 50), aiError: data.aiError })
       setResult(data)
     } catch (err: any) {
       if (err.name === 'AbortError' || err.message?.includes('timeout')) {
@@ -424,6 +425,11 @@ export default function ConsultPage() {
               </div>
               {result.aiAnalysis ? (
                 <div className="text-slate-400 text-sm leading-relaxed whitespace-pre-wrap">{result.aiAnalysis}</div>
+              ) : result.aiError ? (
+                <div className="text-slate-600 text-sm">
+                  <p className="italic mb-2">AI analysis temporarily unavailable.</p>
+                  <p className="text-xs text-slate-700">Error: {result.aiError}</p>
+                </div>
               ) : (
                 <div className="text-slate-600 text-sm italic">AI analysis requires configuration. Contact support to enable this feature.</div>
               )}
