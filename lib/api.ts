@@ -76,20 +76,30 @@ export async function callZhipu(prompt: string, apiKey?: string): Promise<string
 }
 
 export async function callAI(prompt: string): Promise<{ text: string; provider: string }> {
+  console.log('[callAI] SF_API_KEY length:', SF_API_KEY?.length || 0)
+  console.log('[callAI] ZHIPU_API_KEY length:', ZHIPU_API_KEY?.length || 0)
+
   if (SF_API_KEY) {
     try {
+      console.log('[callAI] Trying SiliconFlow...')
       const text = await callSiliconFlow(prompt)
+      console.log('[callAI] SiliconFlow success')
       return { text, provider: 'SiliconFlow' }
     } catch (e: any) {
+      console.error('[callAI] SiliconFlow error:', e.message)
       if (e.message === 'NO_API_KEY') throw e
+      // Try fallback
     }
   }
 
   if (ZHIPU_API_KEY) {
     try {
+      console.log('[callAI] Trying ZhipuAI...')
       const text = await callZhipu(prompt)
+      console.log('[callAI] ZhipuAI success')
       return { text, provider: 'ZhipuAI' }
     } catch (e: any) {
+      console.error('[callAI] ZhipuAI error:', e.message)
       if (e.message === 'NO_API_KEY') throw e
     }
   }

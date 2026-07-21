@@ -83,10 +83,15 @@ export async function POST(req: NextRequest) {
     let aiText: string | null = null
     let aiError: string | null = null
 
+    console.log('[AI Debug] SF_API_KEY exists:', !!process.env.SF_API_KEY)
+    console.log('[AI Debug] ZHIPU_API_KEY exists:', !!process.env.ZHIPU_API_KEY)
+
     try {
       const result = await timeout(callAI(prompt), 30000)
       aiText = result.text
+      console.log('[AI Debug] Success from:', result.provider)
     } catch (err: any) {
+      console.error('[AI Debug] Error:', err.message)
       if (err.message === 'NO_API_KEY' || err.message?.includes('401') || err.message?.includes('403')) {
         aiError = 'NO_API_KEY'
       } else if (err.message === 'timeout') {
