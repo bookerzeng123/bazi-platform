@@ -159,7 +159,7 @@ export default function ConsultPage() {
       const res = await fetch('/api/consult', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        signal: AbortSignal.timeout(60000),
+        signal: AbortSignal.timeout(90000),  // 90 seconds for frontend
         body: JSON.stringify({
           birthYear: parseInt(year),
           birthMonth: parseInt(month),

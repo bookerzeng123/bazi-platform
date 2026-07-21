@@ -87,7 +87,7 @@ export async function POST(req: NextRequest) {
     console.log('[AI Debug] ZHIPU_API_KEY exists:', !!process.env.ZHIPU_API_KEY)
 
     try {
-      const result = await timeout(callAI(prompt), 30000)
+      const result = await timeout(callAI(prompt), 60000)  // 60 seconds timeout
       aiText = result.text
       console.log('[AI Debug] Success from:', result.provider)
     } catch (err: any) {
