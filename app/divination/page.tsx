@@ -194,7 +194,7 @@ export default function DivinationPage() {
                 const interp = GUA_INTERPRETATIONS[key]
                 if (!interp) return (
                   <div className="text-center text-slate-500 text-sm py-4">
-                    I Ching Wisdom speaks in symbols beyond easy translation. Consult a master of the I Ching for a full interpretation of this hexagram.
+                    I Ching Wisdom speaks in symbols beyond easy translation. Consult a cultural scholar of classical philosophy for a deeper exploration of this hexagram's patterns.
                   </div>
                 )
                 return (
