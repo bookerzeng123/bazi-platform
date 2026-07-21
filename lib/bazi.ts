@@ -3,7 +3,7 @@
  * 更准确的八字计算
  */
 
-import { toLunar, getMonthGanZhi, getDayGanZhi, getHourGanZhi, DI_ZHI, SHENG_XIAO } from './lunar'
+import { toLunar, getDayGanZhi, getHourGanZhi } from './lunar'
 
 export interface BaziResult {
   // 四柱
@@ -318,8 +318,8 @@ export function calculateBazi(
   const dayGan = dayGanZhi[0]
   const dayZhi = dayGanZhi[1]
   
-  // 时柱
-  const hourGanZhi = getHourGanZhi(dayGanZhi, birthHour)
+  // 时柱 - 用库的 EightChar 计算（基于真实生日）
+  const hourGanZhi = getHourGanZhi(birthYear, birthMonth, birthDay, birthHour)
   const hourGan = hourGanZhi[0]
   const hourZhi = hourGanZhi[1]
   
@@ -327,7 +327,7 @@ export function calculateBazi(
   const tenGods = {
     year: getTenGod(dayGan, yearGan),
     month: getTenGod(dayGan, monthGan),
-    day: '日主',
+    day: getTenGod(dayGan, dayGan),  // 日主与日主的关系为比肩
     hour: getTenGod(dayGan, hourGan),
   }
   
@@ -357,7 +357,7 @@ export function calculateBazi(
     daYun: generateDaYun(birthYear, monthGan, monthZhi, isMale, yearGan),
     liuNian: generateLiuNian(birthYear),
     wuXingCount,
-    zodiac: lunar.shengXiao,
+    zodiac: lunar.yearShengXiao,
     mingGong: '',
     taiYuan: '',
     shenGong: '',
