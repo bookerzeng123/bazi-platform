@@ -163,11 +163,11 @@ export default function ConsultPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#0a0a0f] via-[#0d1117] to-[#0a0a0f] text-slate-100">
-      {/* ── Promo bar ──────────────────────────────────────────── */}
+      {/* ── Promo bar (free beta notice) ───────────────────────────── */}
       <div className="border-b border-amber-500/15 bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-amber-500/10">
         <div className="mx-auto max-w-7xl px-4 py-2 text-center text-sm">
           <span className="text-amber-400">✦</span>{' '}
-          <span className="text-slate-300">First deep reading <span className="font-semibold text-amber-300">50% off</span> with code <span className="rounded bg-amber-500/15 px-2 py-0.5 font-mono font-bold text-amber-200">FIRSTLIGHT</span></span>
+          <span className="text-slate-300">Open beta — all readings are <span className="font-semibold text-amber-300">free</span> while we perfect the experience</span>
         </div>
       </div>
 
@@ -405,60 +405,81 @@ export default function ConsultPage() {
 
               {(aiStatus === 'error' || aiStatus === 'idle' || (aiStatus === 'done' && !result.aiAnalysis)) && (
                 <div>
-                  <p className="mb-4 text-sm leading-relaxed text-slate-300">
-                    {aiStatus === 'error'
-                      ? 'The reading could not be generated right now. You can retry, or proceed with the purchase and we will deliver a written report within 24 hours.'
-                      : 'Your chart above is calculated precisely. For the deep layer — a 1,800-word analysis referencing classical texts (渊海子平 / 滴天髓 / 穷通宝鉴), addressing the architecture of your day master, your hidden stems, your decade-luck cycles, and the year ahead — unlock below.'}
-                  </p>
+                  {aiStatus === 'idle' && (
+                    <p className="mb-4 text-sm leading-relaxed text-slate-300">
+                      Your chart above is calculated precisely. The deep layer — a 1,800-word analysis referencing classical texts (渊海子平 / 滴天髓 / 穷通宝鉴), the architecture of your day master, your hidden stems, decade-luck cycles, and the year ahead — is included for free during the open beta. It takes 30-60 seconds.
+                    </p>
+                  )}
 
-                  <div className="mb-5 rounded-xl border border-slate-800 bg-[#0a0a0f]/60 p-5">
-                    <div className="mb-3 text-xs uppercase tracking-widest text-amber-400/80">What you receive</div>
-                    <ul className="space-y-2 text-sm text-slate-300">
-                      {[
-                        'A 1,800-word analysis of your specific chart',
-                        'References to classical commentary (渊海子平 / 滴天髓 / 穷通宝鉴)',
-                        'Reading of your hidden stems as inner voices',
-                        'Each upcoming decade-luck cycle, what it activates',
-                        'The approaching three years, year by year',
-                        'A single closing image to carry with you',
-                      ].map((f) => (
-                        <li key={f} className="flex items-start gap-2.5">
-                          <span className="mt-0.5 text-amber-400">✓</span>
-                          <span>{f}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
+                  {aiStatus === 'idle' && (
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        setAiStatus('processing')
+                        setAiElapsed(0)
+                        try {
+                          const r = await fetch('/api/consult', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                              birthYear: parseInt(form.year), birthMonth: parseInt(form.month),
+                              birthDay: parseInt(form.day), birthHour: parseInt(form.hour),
+                              gender: form.gender, question: '',
+                            }),
+                          })
+                          const data = await r.json()
+                          if (data.analysisId) startPolling(data.analysisId)
+                          else if (data.aiAnalysis) { setResult((p: any) => ({ ...p, aiAnalysis: data.aiAnalysis })); setAiStatus('done') }
+                          else throw new Error(data.error || 'No analysisId')
+                        } catch (e: any) {
+                          setAiStatus('error')
+                          setError(e.message || 'Failed to start reading')
+                        }
+                      }}
+                      className="w-full rounded-xl bg-gradient-to-r from-amber-400 to-amber-600 py-4 text-sm font-bold text-[#0a0a0f] shadow-lg shadow-amber-500/20 transition hover:from-amber-300 hover:to-amber-500"
+                    >
+                      ✦ Begin Deep Reading (Free, ~60s)
+                    </button>
+                  )}
 
-                  <div className="mb-4 grid grid-cols-2 gap-3">
-                    {/* Retry AI (only if failed) */}
-                    {aiStatus === 'error' && (
+                  {aiStatus === 'error' && (
+                    <div>
+                      <p className="mb-4 text-sm leading-relaxed text-slate-300">
+                        The reading could not be generated right now. The chart above is still yours to keep.
+                      </p>
                       <button
                         type="button"
-                        onClick={() => {
-                          setAiStatus('idle')
+                        onClick={async () => {
+                          setAiStatus('processing')
+                          setAiElapsed(0)
                           setError('')
-                          handleSubmit({ preventDefault: () => {} } as any)
+                          try {
+                            const r = await fetch('/api/consult', {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({
+                                birthYear: parseInt(form.year), birthMonth: parseInt(form.month),
+                                birthDay: parseInt(form.day), birthHour: parseInt(form.hour),
+                                gender: form.gender, question: '',
+                              }),
+                            })
+                            const data = await r.json()
+                            if (data.analysisId) startPolling(data.analysisId)
+                            else throw new Error(data.error || 'No analysisId')
+                          } catch (e: any) {
+                            setAiStatus('error')
+                            setError(e.message || 'Failed to start reading')
+                          }
                         }}
-                        className="rounded-xl border border-slate-700 bg-[#0a0a0f]/40 py-3.5 text-sm font-medium text-slate-300 transition hover:border-amber-500/40 hover:text-amber-300"
+                        className="w-full rounded-xl border border-amber-500/40 bg-amber-500/5 py-3.5 text-sm font-medium text-amber-300 transition hover:bg-amber-500/10"
                       >
-                        ↻ Retry AI Reading
+                        ↻ Retry Deep Reading
                       </button>
-                    )}
+                    </div>
+                  )}
 
-                    {/* Primary: Purchase deep reading */}
-                    <a
-                      href="https://aether-readings.lemonsqueezy.com/checkout/buy/REPLACE_WITH_YOUR_PRODUCT_ID"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className={`flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-amber-400 to-amber-600 py-3.5 text-sm font-bold text-[#0a0a0f] shadow-lg shadow-amber-500/20 transition hover:from-amber-300 hover:to-amber-500 ${aiStatus === 'error' ? 'col-span-1' : 'col-span-2'}`}
-                    >
-                      Unlock Deep Reading · $4.99 →
-                    </a>
-                  </div>
-
-                  <p className="text-center text-[10px] text-slate-700 sm:text-xs">
-                    Secured by LemonSqueezy · 7-day satisfaction guarantee · Refund if it doesn't speak to you
+                  <p className="mt-4 text-center text-[10px] text-slate-700 sm:text-xs">
+                    Free during open beta · No account required · No card details
                   </p>
                 </div>
               )}
@@ -470,13 +491,13 @@ export default function ConsultPage() {
         {/* Users were comparing samples to their own charts; the section was removed.
             Trust is now carried by the three columns (Lineage, Precision, Guarantee). */}
 
-        {/* ── Trust & guarantee ──────────────────────────────────── */}
+        {/* ── Trust & values (no payment guarantees) ────────────────── */}
         {!result && (
           <section className="mt-16 grid gap-4 sm:grid-cols-3">
             {[
               { icon: '📜', title: 'A Lineage of Texts', body: 'Every reading draws from the Yuan Hai Zi Ping, the Di Tian Sui, the Qiong Tong Bao Jian, and the Zi Ping Zhen Quan.' },
               { icon: '⚙️', title: 'Calculated to the Hour', body: 'Our lunar algorithms are validated against a century of almanacs. Every chart is cross-checked before a word is written.' },
-              { icon: '🤝', title: '7-Day Guarantee', body: 'If the reading does not speak to you, write back within seven days for a full refund. No questions, no friction.' },
+              { icon: '🔒', title: 'Your Data, Sacred', body: 'Your birth data is processed and discarded. We do not store names, store charts, or build a profile of you. The reading is yours alone.' },
             ].map((c) => (
               <div key={c.title} className="rounded-2xl border border-amber-500/15 bg-[#12121a] p-6">
                 <div className="mb-3 text-3xl">{c.icon}</div>
@@ -498,6 +519,9 @@ export default function ConsultPage() {
           >
             Reveal My Four Pillars →
           </a>
+          <p className="mt-4 text-[10px] text-slate-600 sm:text-xs">
+            Free during open beta · No account, no card, no friction
+          </p>
         </section>
 
         <p className="mx-auto mt-12 max-w-md text-center text-[10px] leading-relaxed text-slate-700 sm:text-xs">

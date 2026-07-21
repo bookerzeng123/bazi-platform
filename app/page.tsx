@@ -5,10 +5,10 @@ export const metadata = {
 }
 
 const categories = [
-  { slug: '/consult',    icon: '☯', name: 'Four Pillars',         tag: 'Most Sought', price: '$5.99', live: true,  blurb: 'The precise architecture of your birth moment, decoded through stems, branches, and the cycles of time.' },
-  { slug: '/compass',    icon: '🧭', name: 'Space Harmony',        tag: 'New',         price: 'Free',  live: true,  blurb: 'Twenty-four mountains, nine palaces — align your space with the geometry of the earth.' },
-  { slug: '/horoscope',  icon: '✦',  name: 'Stellar Reflections',  tag: 'Daily',       price: 'Free',  live: true,  blurb: 'A daily reading of the celestial weather — love, work, wealth, and health, calibrated to the heavens.' },
-  { slug: '/divination', icon: '🔮', name: 'I Ching Wisdom',        tag: 'Classic',     price: '$3.99', live: true,  blurb: 'Cast the coins. Sixty-four hexagrams distilled from three thousand years of contemplation.' },
+  { slug: '/consult',    icon: '☯', name: 'Four Pillars',         tag: 'Most Sought', price: 'Free', live: true,  blurb: 'The precise architecture of your birth moment, decoded through stems, branches, and the cycles of time.' },
+  { slug: '/compass',    icon: '🧭', name: 'Space Harmony',        tag: 'New',         price: 'Free', live: true,  blurb: 'Twenty-four mountains, nine palaces — align your space with the geometry of the earth.' },
+  { slug: '/horoscope',  icon: '✦',  name: 'Stellar Reflections',  tag: 'Daily',       price: 'Free', live: true,  blurb: 'A daily reading of the celestial weather — love, work, wealth, and health, calibrated to the heavens.' },
+  { slug: '/divination', icon: '🔮', name: 'I Ching Wisdom',        tag: 'Classic',     price: 'Free', live: true,  blurb: 'Cast the coins. Sixty-four hexagrams distilled from three thousand years of contemplation.' },
   { slug: '#',           icon: '🌙', name: 'Dream Cartography',    tag: 'Soon',        price: '—',     live: false, blurb: 'Map the symbols your sleeping mind offers — a gentle practice of inner listening.' },
   { slug: '#',           icon: '🔢', name: 'Life Path Numbers',    tag: 'Soon',        price: '—',     live: false, blurb: 'The numerological patterns that echo through your dates, names, and turning points.' },
   { slug: '#',           icon: '🪬', name: 'Relationship Mirror',  tag: 'Soon',        price: '—',     live: false, blurb: 'Reflect on the patterns between you and another — through the lens of elemental compatibility.' },
@@ -23,7 +23,7 @@ const modes = [
     rating: '4.9',
     readings: '128,402',
     intro: 'A traditional voice — slow, careful, weighted with the authority of three thousand years of commentary.',
-    price: '$5.99',
+    price: 'Free',
     badge: 'Most chosen',
     color: 'from-amber-500/20 to-amber-700/10',
   },
@@ -34,7 +34,7 @@ const modes = [
     rating: '4.8',
     readings: '94,201',
     intro: 'A contemporary voice — reframing classical patterns in the language of psychology, choices, and self-knowledge.',
-    price: '$4.99',
+    price: 'Free',
     badge: 'Popular',
     color: 'from-rose-500/20 to-rose-700/10',
   },
@@ -45,7 +45,7 @@ const modes = [
     rating: '4.9',
     readings: '67,118',
     intro: 'A lyrical voice — speaking in metaphor, paradox, and the long sentences of contemplation.',
-    price: '$4.99',
+    price: 'Free',
     badge: 'For writers',
     color: 'from-violet-500/20 to-violet-700/10',
   },
@@ -56,7 +56,7 @@ const modes = [
     rating: '4.7',
     readings: '52,889',
     intro: 'A direct voice — translating patterns into specific suggestions for the week, the meeting, the conversation.',
-    price: '$3.99',
+    price: 'Free',
     badge: 'For doers',
     color: 'from-emerald-500/20 to-emerald-700/10',
   },
@@ -76,7 +76,7 @@ const trust = [
   {
     icon: '🤝',
     title: 'An Honest Exchange',
-    body: 'No subscriptions. No upsells. No claims that a chart can predict a person. You pay once for one reading — and we tell you plainly what these traditions can and cannot do.',
+    body: 'No subscriptions. No upsells. No claims that a chart can predict a person. Everything is free during the open beta — and we tell you plainly what these traditions can and cannot do.',
   },
 ]
 
@@ -202,7 +202,7 @@ export default function Home() {
           </div>
 
           <p className="mt-6 text-xs text-slate-500">
-            ✦ First reading half-price · No subscription · For entertainment and self-discovery
+            ✦ Free during open beta · No subscription · For entertainment and self-discovery
           </p>
         </div>
 
@@ -454,7 +454,7 @@ export default function Home() {
             </span>
           </h2>
           <p className="mb-10 text-lg text-slate-400">
-            First reading half-price. No subscription. Three minutes to a full chart.
+            Free during open beta. No account needed. Three minutes to a full chart.
           </p>
           <Link
             href="/consult"
