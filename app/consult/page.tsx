@@ -59,19 +59,6 @@ function ElementBar({ scores }: { scores?: Record<string, number> }) {
 }
 
 // ─────────────────────────────────────────────────────────────
-// Sample reading — clearly marked as example, demonstrates quality
-// ─────────────────────────────────────────────────────────────
-const SAMPLE_READING = `**# A Reading of Dragon Yang**
-
-**## I. The Ground You Stand On**
-Your day master is Geng Metal (庚) — the unyielding edge of the axe, the sword in the moment before it falls. Born in the depth of winter, you came into a world that did not soften you. There is, in this chart, a particular coldness to the will — not cruelty, but the absence of apology. The Di Tian Sui remarks that Geng Metal in the winter month is "the metal waiting to be forged" — strong in form, not yet strong in purpose.
-
-**## III. The Sub-Text — Hidden Stems as Inner Voices**
-Your year pillar's hidden stem reveals a Yin Wood (乙) — the vine, the bending thing that finds its way through stone. Below the surface of that severe Geng presentation is something far more supple than you let anyone see...
-
-*— this is an excerpt. The full reading continues for 1,800+ words, addressing your specific question through classical commentary, decade-luck analysis, and the year ahead.*`
-
-// ─────────────────────────────────────────────────────────────
 // Page
 // ─────────────────────────────────────────────────────────────
 export default function ConsultPage() {
@@ -420,7 +407,7 @@ export default function ConsultPage() {
                 <div>
                   <p className="mb-4 text-sm leading-relaxed text-slate-300">
                     {aiStatus === 'error'
-                      ? 'The deep reading could not be generated right now. You can still purchase a written report and we will email it within 24 hours, or retry the analysis.'
+                      ? 'The reading could not be generated right now. You can retry, or proceed with the purchase and we will deliver a written report within 24 hours.'
                       : 'Your chart above is calculated precisely. For the deep layer — a 1,800-word analysis referencing classical texts (渊海子平 / 滴天髓 / 穷通宝鉴), addressing the architecture of your day master, your hidden stems, your decade-luck cycles, and the year ahead — unlock below.'}
                   </p>
 
@@ -443,22 +430,35 @@ export default function ConsultPage() {
                     </ul>
                   </div>
 
-                  <div className="mb-2 text-center">
-                    <div className="text-xs text-slate-600 line-through">$9.99</div>
-                    <div className="text-3xl font-light text-amber-300">$4.99</div>
-                    <div className="text-xs text-slate-600">One-time. No subscription. PDF delivered to your email.</div>
+                  <div className="mb-4 grid grid-cols-2 gap-3">
+                    {/* Retry AI (only if failed) */}
+                    {aiStatus === 'error' && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setAiStatus('idle')
+                          setError('')
+                          handleSubmit({ preventDefault: () => {} } as any)
+                        }}
+                        className="rounded-xl border border-slate-700 bg-[#0a0a0f]/40 py-3.5 text-sm font-medium text-slate-300 transition hover:border-amber-500/40 hover:text-amber-300"
+                      >
+                        ↻ Retry AI Reading
+                      </button>
+                    )}
+
+                    {/* Primary: Purchase deep reading */}
+                    <a
+                      href="https://aether-readings.lemonsqueezy.com/checkout/buy/REPLACE_WITH_YOUR_PRODUCT_ID"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={`flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-amber-400 to-amber-600 py-3.5 text-sm font-bold text-[#0a0a0f] shadow-lg shadow-amber-500/20 transition hover:from-amber-300 hover:to-amber-500 ${aiStatus === 'error' ? 'col-span-1' : 'col-span-2'}`}
+                    >
+                      Unlock Deep Reading · $4.99 →
+                    </a>
                   </div>
 
-                  <a
-                    href="https://paypal.me/AetherReadings/4.99"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="block w-full rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 py-4 text-center text-sm font-bold text-white shadow-lg shadow-blue-500/20 transition hover:from-blue-400 hover:to-blue-500"
-                  >
-                    Unlock Deep Reading · $4.99 →
-                  </a>
-                  <p className="mt-3 text-center text-[10px] text-slate-700 sm:text-xs">
-                    Secured by PayPal · 7-day satisfaction guarantee · Refund if it doesn't speak to you
+                  <p className="text-center text-[10px] text-slate-700 sm:text-xs">
+                    Secured by LemonSqueezy · 7-day satisfaction guarantee · Refund if it doesn't speak to you
                   </p>
                 </div>
               )}
@@ -466,25 +466,9 @@ export default function ConsultPage() {
           </section>
         )}
 
-        {/* ── Sample reading teaser ──────────────────────────────── */}
-        {!result && (
-          <section className="mt-16">
-            <div className="mb-6 text-center">
-              <div className="mb-2 text-xs uppercase tracking-[0.3em] text-amber-400/80">What the deep reading feels like</div>
-              <h2 className="text-2xl font-light text-slate-100 sm:text-3xl">An excerpt from a real reading</h2>
-              <p className="mt-2 text-sm text-slate-500">This is what the paid layer delivers — a 1,800-word essay on your specific chart.</p>
-            </div>
-            <div className="rounded-2xl border border-amber-500/20 bg-[#0d1117]/60 p-6 sm:p-8">
-              <div className="mb-4 text-[10px] uppercase tracking-widest text-amber-500/60 sm:text-xs">Sample — for demonstration only</div>
-              <div className="prose prose-invert max-w-none whitespace-pre-wrap text-sm leading-relaxed text-slate-400">
-                {SAMPLE_READING}
-              </div>
-              <div className="mt-6 border-t border-amber-500/10 pt-4 text-center text-xs text-slate-600">
-                ↑ This is roughly 1/10th of the actual reading. Yours will be specific to your pillars, your hidden stems, your question.
-              </div>
-            </div>
-          </section>
-        )}
+        {/* ── Sample reading teaser REMOVED by user request ─────────── */}
+        {/* Users were comparing samples to their own charts; the section was removed.
+            Trust is now carried by the three columns (Lineage, Precision, Guarantee). */}
 
         {/* ── Trust & guarantee ──────────────────────────────────── */}
         {!result && (
