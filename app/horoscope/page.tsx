@@ -3,6 +3,17 @@
 import { useState } from 'react'
 import Link from 'next/link'
 
+// Color name → CSS color value
+const colorMap: Record<string, string> = {
+  'Red': '#ef4444', 'Orange': '#f97316', 'Gold': '#eab308', 'Yellow': '#facc15',
+  'Green': '#22c55e', 'Dark Green': '#166534', 'Brown': '#92400e', 'Beige': '#d4c5a9',
+  'Blue': '#3b82f6', 'Cyan': '#06b6d4', 'Sea Blue': '#0ea5e9', 'Light Blue': '#7dd3fc',
+  'Pale Blue': '#bae6fd', 'Deep Blue': '#1d4ed8', 'Navy Blue': '#1e3a8a',
+  'Purple': '#a855f7', 'Deep Red': '#991b1b', 'Violet': '#8b5cf6',
+  'Black': '#111827', 'Dark Gray': '#374151', 'Gray': '#6b7280', 'Silver': '#94a3b8',
+  'White': '#f9fafb', 'Pink': '#ec4899', 'Pale Yellow': '#fef9c3',
+}
+
 const ZODIAC_SIGNS = [
   { name: 'Capricorn', icon: '♑', element: 'Earth', traits: 'Ambitious · Disciplined · Patient', startMonth: 12, startDay: 22, endMonth: 1, endDay: 19, planet: 'Saturn', dates: 'Dec 22 – Jan 19' },
   { name: 'Aquarius', icon: '♒', element: 'Air', traits: 'Independent · Innovative · Humanitarian', startMonth: 1, startDay: 20, endMonth: 2, endDay: 18, planet: 'Uranus', dates: 'Jan 20 – Feb 18' },
@@ -495,7 +506,7 @@ function generateHoroscope(signName: string, birthMonth: number, birthDay: numbe
     ],
     lucky: {
       number: pickLucky(LUCKY_NUMBERS[signName] || [7]),
-      color: pickLucky(LUCKY_COLORS[signName] || ['Red']),
+      allColors: LUCKY_COLORS[signName] || ['Red'],
       direction: pickLucky(LUCKY_DIRECTIONS[signName] || ['East']),
       food: pickLucky(LUCKY_FOODS[signName] || ['Apple']),
       activity: pickLucky(LUCKY_ACTIVITIES[signName] || ['Walking']),
@@ -614,18 +625,36 @@ export default function HoroscopePage() {
               <div className="bg-[#0d1117]/80 rounded-xl p-6 border border-slate-800">
                 <h4 className="text-amber-400 font-bold text-center mb-5 text-sm uppercase tracking-widest">Your Lucky Signature</h4>
                 <div className="grid grid-cols-2 md:grid-cols-5 gap-5 text-center">
-                  {[
-                    { label: 'Number', value: result.horoscope.lucky.number },
-                    { label: 'Color', value: result.horoscope.lucky.color },
-                    { label: 'Direction', value: result.horoscope.lucky.direction },
-                    { label: 'Food', value: result.horoscope.lucky.food },
-                    { label: 'Activity', value: result.horoscope.lucky.activity },
-                  ].map((l) => (
-                    <div key={l.label}>
-                      <div className="text-slate-600 text-xs mb-1.5 uppercase tracking-wider">{l.label}</div>
-                      <div className="text-lg font-bold text-amber-400">{l.value}</div>
+                  {/* Number */}
+                  <div>
+                    <div className="text-slate-600 text-xs mb-1.5 uppercase tracking-wider">Number</div>
+                    <div className="text-lg font-bold text-amber-400">{result.horoscope.lucky.number}</div>
+                  </div>
+                  {/* Colors — show all as swatches */}
+                  <div>
+                    <div className="text-slate-600 text-xs mb-1.5 uppercase tracking-wider">Colors</div>
+                    <div className="flex justify-center gap-1.5 flex-wrap">
+                      {(result.horoscope.lucky.allColors || ['Red']).map((c: string) => (
+                        <div key={c} className="w-6 h-6 rounded-full shadow-sm" style={{ background: colorMap[c] || '#888' }} title={c} />
+                      ))}
                     </div>
-                  ))}
+                    <div className="text-[10px] text-slate-500 mt-1 leading-tight">{(result.horoscope.lucky.allColors || []).join(' · ')}</div>
+                  </div>
+                  {/* Direction */}
+                  <div>
+                    <div className="text-slate-600 text-xs mb-1.5 uppercase tracking-wider">Direction</div>
+                    <div className="text-lg font-bold text-amber-400">{result.horoscope.lucky.direction}</div>
+                  </div>
+                  {/* Food */}
+                  <div>
+                    <div className="text-slate-600 text-xs mb-1.5 uppercase tracking-wider">Food</div>
+                    <div className="text-lg font-bold text-amber-400">{result.horoscope.lucky.food}</div>
+                  </div>
+                  {/* Activity */}
+                  <div>
+                    <div className="text-slate-600 text-xs mb-1.5 uppercase tracking-wider">Activity</div>
+                    <div className="text-lg font-bold text-amber-400">{result.horoscope.lucky.activity}</div>
+                  </div>
                 </div>
               </div>
             </div>
