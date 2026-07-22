@@ -95,26 +95,18 @@ const testimonials = [
   },
 ]
 
-const articles = [
-  { tag: 'On the Four Pillars', title: 'What the Year Pillar Actually Tells You', read: '6 min' },
-  { tag: 'On Space',            title: 'Why the Front Door Matters More Than the Bedroom', read: '5 min' },
-  { tag: 'On the Stars',        title: 'A Quiet Defense of Sun-Sign Astrology',     read: '7 min' },
-  { tag: 'On the Hexagrams',    title: 'The 64 as a Practice, Not a Prediction',   read: '8 min' },
-]
-
 export default function Home() {
   return (
     <main className="min-h-screen bg-[#0a0a0f] text-slate-100 selection:bg-amber-500/30">
-      {/* ── 1. Top promo bar ─────────────────────────────────────── */}
-      <div className="border-b border-amber-500/15 bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-amber-500/10">
+      {/* ── 1. Top info bar ─────────────────────────────────────── */}
+      <div className="border-b border-amber-500/10 bg-gradient-to-r from-amber-500/8 via-amber-500/4 to-amber-500/8">
         <div className="mx-auto flex max-w-7xl items-center justify-center gap-3 px-4 py-2 text-center text-sm">
           <span className="text-amber-400">✦</span>
           <span className="text-slate-300">
-            First reading <span className="font-semibold text-amber-300">50% off</span> with code{' '}
-            <span className="rounded bg-amber-500/15 px-2 py-0.5 font-mono font-bold text-amber-200">FIRSTLIGHT</span>
+            All readings are <span className="font-semibold text-amber-300">free</span> during open beta — no account required
           </span>
           <Link href="/consult" className="hidden text-amber-400 underline-offset-2 hover:underline sm:inline">
-            Claim →
+            Begin →
           </Link>
         </div>
       </div>
@@ -406,34 +398,46 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── 9. Featured articles ────────────────────────────────── */}
-      <section id="articles" className="border-t border-amber-500/10 bg-[#0e0e16] py-20">
+      {/* ── 9. How it works ─────────────────────────────────────── */}
+      <section className="border-t border-amber-500/10 bg-[#0e0e16] py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
-          <div className="mb-12 flex items-end justify-between">
-            <div>
-              <p className="mb-3 text-xs uppercase tracking-[0.3em] text-amber-400/80">The Journal</p>
-              <h2 className="text-3xl font-light text-slate-100 sm:text-4xl">Long-Form Reading</h2>
-            </div>
-            <a href="#" className="hidden text-sm text-amber-400 hover:text-amber-300 sm:inline">
-              All articles →
-            </a>
+          <div className="mb-14 text-center">
+            <p className="mb-3 text-xs uppercase tracking-[0.3em] text-amber-400/80">Open Process</p>
+            <h2 className="text-3xl font-light text-slate-100 sm:text-4xl">How the Reading is Built</h2>
+            <p className="mx-auto mt-4 max-w-xl text-slate-400">
+              Every reading is constructed from three distinct layers. Here is what each one does.
+            </p>
           </div>
 
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-            {articles.map((a, i) => (
-              <article
-                key={i}
-                className="group cursor-pointer overflow-hidden rounded-2xl border border-amber-500/15 bg-[#12121a] transition hover:border-amber-500/40"
-              >
-                <div className="aspect-[4/3] bg-gradient-to-br from-amber-500/10 via-rose-500/5 to-violet-500/10" />
-                <div className="p-5">
-                  <p className="mb-2 text-xs uppercase tracking-wider text-amber-400/80">{a.tag}</p>
-                  <h3 className="mb-3 text-base font-medium leading-snug text-slate-100 group-hover:text-amber-300">
-                    {a.title}
-                  </h3>
-                  <p className="text-xs text-slate-500">{a.read} read</p>
+          <div className="grid gap-8 md:grid-cols-3">
+            {[
+              {
+                step: '01',
+                title: 'Precision Calculation',
+                icon: '⚙',
+                body: 'The lunar calendar and Eight Characters (八字) are computed using a validated astronomical library. The month branch accounts for solar terms. Every pillar is derived from the same math used by professional practitioners.',
+              },
+              {
+                step: '02',
+                title: 'Classical Knowledge Base',
+                icon: '📜',
+                body: 'Before any text is written, the system draws from the commentary of the Yuan Hai Zi Ping, the Di Tian Sui, and the Qiong Tong Bao Jian — three foundational texts of the tradition, spanning a thousand years of refinement.',
+              },
+              {
+                step: '03',
+                title: 'Expert Prompt Rendering',
+                icon: '✦',
+                body: 'A structured prompt — built from the knowledge base, the actual chart data, and a 40-year master practitioner\'s reading voice — is rendered by Qwen 72B. The result is specific to your chart, not a template.',
+              },
+            ].map((layer) => (
+              <div key={layer.step} className="rounded-2xl border border-amber-500/15 bg-[#12121a] p-8">
+                <div className="mb-5 flex items-center gap-4">
+                  <span className="text-3xl">{layer.icon}</span>
+                  <span className="font-mono text-xs uppercase tracking-widest text-amber-400/60">{layer.step}</span>
                 </div>
-              </article>
+                <h3 className="mb-3 text-xl font-medium text-slate-100">{layer.title}</h3>
+                <p className="leading-relaxed text-slate-400">{layer.body}</p>
+              </div>
             ))}
           </div>
         </div>
