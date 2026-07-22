@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'export',
-  distDir: 'dist',
+  // Removed output: 'export' because Railway runs in Node server mode
+  // and expects the .next directory + `next start` command
   images: { unoptimized: true },
 }
 
